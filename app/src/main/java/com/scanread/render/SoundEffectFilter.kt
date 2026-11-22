@@ -18,6 +18,11 @@ class SoundEffectFilter(
     /** Longer phrases often contain names ("Mr. Smith!"), which also translate almost unchanged. */
     private val maxWords: Int = 1,
     private val minSimilarity: Float = 0.5f,
+    /**
+     * Large lettering is a sound effect only when it is (nearly) one repeated word ("BOOM BOOM BOOM",
+     * "BAM BAM"); shouted dialogue in big letters has more distinct words.
+     */
+    private val maxDistinctWordsInLargeLettering: Int = 2,
 ) {
     /** @return `true` for each block that should be skipped, in the same order as [blocks]. */
     fun detect(blocks: List<TextBlock>, translations: List<String>, inBalloon: List<Boolean>): List<Boolean> {
@@ -26,7 +31,8 @@ class SoundEffectFilter(
             val block = blocks[index]
             when {
                 inBalloon[index] -> false
-                typicalLineHeight > 0 && lineHeight(block) > typicalLineHeight * maxLineHeightRatio -> true
+                typicalLineHeight > 0 && lineHeight(block) > typicalLineHeight * maxLineHeightRatio &&
+                    distinctWords(block.sourceText) <= maxDistinctWordsInLargeLettering -> true
                 block.sourceText.split(' ').size <= maxWords &&
                     similarity(block.sourceText, translations[index]) >= minSimilarity -> true
                 else -> false
@@ -35,6 +41,9 @@ class SoundEffectFilter(
     }
 
     private fun lineHeight(block: TextBlock): Float = block.box.height.toFloat() / block.lines.size
+
+    private fun distinctWords(text: String): Int =
+        text.split(' ').map(::lettersOnly).filter(String::isNotEmpty).toSet().size
 
     private fun median(values: List<Float>): Float {
         if (values.isEmpty()) return 0f
@@ -53,7 +62,7 @@ class SoundEffectFilter(
             return 1f - editDistance(x, y).toFloat() / max(x.length, y.length)
         }
 
-        private fun lettersOnly(text: String): String =
+        internal fun lettersOnly(text: String): String =
             MARKS.replace(Normalizer.normalize(text, Normalizer.Form.NFD), "")
                 .uppercase(Locale.ROOT)
                 .filter(Char::isLetter)

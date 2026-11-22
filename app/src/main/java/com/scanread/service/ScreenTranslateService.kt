@@ -35,6 +35,9 @@ import com.scanread.pipeline.BlockTranslator
 import com.scanread.pipeline.DebugCaptureDump
 import com.scanread.pipeline.ScreenTextAnalyzer
 import com.scanread.render.SoundEffectFilter
+import com.scanread.text.TextNormalizer
+import com.scanread.text.WordSegmenter
+import com.scanread.translate.opusmt.OpusMtBundle
 import com.scanread.translate.CachingTranslationEngine
 import com.scanread.translate.LanguagePair
 import com.scanread.translate.TranslationEngine
@@ -124,7 +127,18 @@ class ScreenTranslateService : LifecycleService() {
         backend = selectedBackend
         val engine = CachingTranslationEngine(baseEngine)
         translationEngine = engine
-        blockTranslator = BlockTranslator(engine, Locale.forLanguageTag(languagePair.target))
+        // The Opus-MT vocabulary doubles as a dictionary for splitting words OCR glued together.
+        val segmenter = OpusMtBundle.installed(filesDir, languagePair)
+            ?.takeIf { selectedBackend == TranslationBackends.Backend.OPUS_MT }
+            ?.let { bundle ->
+                lazy {
+                    val contractions = TextNormalizer.contractionKeys.associateWith { CONTRACTION_WORD_SCORE }
+                    WordSegmenter(contractions + bundle.loadWordScores())
+                }
+            }
+        blockTranslator = BlockTranslator(engine, Locale.forLanguageTag(languagePair.target)) { text ->
+            segmenter?.value?.segment(text)?.let(TextNormalizer::repairContractions) ?: text
+        }
         translationOverlay = TranslationOverlay(this, onDismissRequest = ::dismissOverlay)
         floatingButton = FloatingButton(this, onClick = ::onFloatingButtonClicked).also { it.show() }
         _isRunning.value = true
@@ -296,6 +310,9 @@ class ScreenTranslateService : LifecycleService() {
         private const val REQUEST_OPEN_APP = 0
         private const val REQUEST_STOP = 1
         private const val CAPTURE_SETTLE_DELAY_MS = 150L
+
+        /** Score for apostrophe-less contractions ("youve") so glued words can split into them. */
+        private const val CONTRACTION_WORD_SCORE = -7f
 
         private val _isRunning = MutableStateFlow(false)
         val isRunning: StateFlow<Boolean> = _isRunning.asStateFlow()

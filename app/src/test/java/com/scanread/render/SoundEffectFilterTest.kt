@@ -43,6 +43,14 @@ class SoundEffectFilterTest {
     }
 
     @Test
+    fun `shouted dialogue in large letters is translated`() {
+        val blocks = listOf(block("YOU?! A SAILOR?! NO WAY!!", 120), block("A", 30, 2), block("B", 30), block("C", 30))
+        val translations = listOf("SEN Mİ?! DENİZCİ Mİ?! OLAMAZ!!", "...", "...", "...")
+
+        assertEquals(false, filter.detect(blocks, translations, listOf(false, false, false, false))[0])
+    }
+
+    @Test
     fun `text inside balloons is always translated`() {
         val blocks = listOf(block("HMM", 30))
 

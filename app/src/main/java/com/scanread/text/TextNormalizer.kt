@@ -15,6 +15,9 @@ object TextNormalizer {
     private const val SENTENCE_END = ".!?"
 
     private val WORD = Regex("\\b[A-Za-z]+\\b")
+    /** Apostrophe-less contractions [repairContractions] understands, e.g. "youve". */
+    val contractionKeys: Set<String> get() = CONTRACTIONS.keys
+
     private val CONTRACTIONS = mapOf(
         "im" to "I'm", "ive" to "I've", "youre" to "you're", "youve" to "you've", "youll" to "you'll",
         "youd" to "you'd", "hes" to "he's", "shes" to "she's", "thats" to "that's", "theres" to "there's",

@@ -32,6 +32,23 @@ class OpusMtBundle(val directory: File) {
         )
     }
 
+    /**
+     * Frequent source-language words with log-probability scores: SentencePiece pieces that form a
+     * whole word (start with the word marker and contain only letters), lowercased.
+     */
+    fun loadWordScores(): Map<String, Float> {
+        val scores = HashMap<String, Float>()
+        sourcePiecesFile.forEachLine { line ->
+            val fields = line.split('\t')
+            if (fields.size < 3 || fields[2] != "normal" || !fields[0].startsWith(WORD_MARKER)) return@forEachLine
+            val word = fields[0].substring(1).lowercase()
+            if (word.isEmpty() || !word.all(Char::isLetter)) return@forEachLine
+            val score = fields[1].toFloat()
+            scores[word] = maxOf(scores[word] ?: Float.NEGATIVE_INFINITY, score)
+        }
+        return scores
+    }
+
     data class Config(
         val eosTokenId: Int,
         val padTokenId: Int,
@@ -50,6 +67,7 @@ class OpusMtBundle(val directory: File) {
         const val SOURCE_PIECES = "source_pieces.tsv"
         const val PROPERTIES = "model.properties"
         private val REQUIRED_FILES = listOf(ENCODER, DECODER, VOCABULARY, SOURCE_PIECES, PROPERTIES)
+        private const val WORD_MARKER = "▁"
 
         private const val MODELS_DIRECTORY = "models"
 

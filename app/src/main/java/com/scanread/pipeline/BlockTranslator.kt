@@ -3,6 +3,8 @@ package com.scanread.pipeline
 import com.scanread.text.SentenceSplitter
 import com.scanread.text.model.TextBlock
 import com.scanread.translate.TranslationEngine
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.util.Locale
 
 /**
@@ -22,9 +24,13 @@ data class TranslatedBlock(
 class BlockTranslator(
     private val engine: TranslationEngine,
     private val targetLocale: Locale,
+    /** Optional source text repair applied before translation, e.g. splitting glued words. */
+    private val repair: (String) -> String = { it },
 ) {
     suspend fun translate(blocks: List<TextBlock>): List<TranslatedBlock> {
-        val sentencesPerBlock = blocks.map { SentenceSplitter.split(it.text) }
+        val sentencesPerBlock = withContext(Dispatchers.Default) {
+            blocks.map { SentenceSplitter.split(repair(it.text)) }
+        }
         val sources = sentencesPerBlock.flatten()
         val translations = engine.translate(sources).mapIndexed { index, text -> cleanUp(sources[index], text) }
 
