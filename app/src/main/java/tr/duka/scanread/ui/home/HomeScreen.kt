@@ -39,6 +39,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import tr.duka.scanread.R
 import tr.duka.scanread.ui.components.ScreenScaffold
+import tr.duka.scanread.update.AppRelease
 import tr.duka.scanread.ui.theme.ScanReadTheme
 
 enum class ModelSummary { HIGH_QUALITY_READY, BASIC_READY, DOWNLOADING, NEEDED }
@@ -49,6 +50,8 @@ data class HomeUiState(
     /** e.g. "English → Turkish". */
     val languages: String,
     val modelSummary: ModelSummary,
+    /** A newer version available for download, if any. */
+    val availableUpdate: AppRelease? = null,
 )
 
 @Composable
@@ -56,6 +59,7 @@ fun HomeScreen(
     state: HomeUiState,
     onToggleService: () -> Unit,
     onGrantOverlay: () -> Unit,
+    onOpenUrl: (String) -> Unit,
     onOpenLanguages: () -> Unit,
     onOpenSettings: () -> Unit,
     onOpenSupport: () -> Unit,
@@ -84,6 +88,7 @@ fun HomeScreen(
                 textAlign = TextAlign.Center,
             )
 
+            state.availableUpdate?.let { UpdateCard(it, onOpenUrl) }
             if (!state.overlayGranted) OverlayPermissionWarning(onGrantOverlay)
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -132,6 +137,37 @@ private fun StartStopButton(isRunning: Boolean, enabled: Boolean, onClick: () ->
             contentDescription = stringResource(if (isRunning) R.string.service_action_stop else R.string.service_action_start),
             modifier = Modifier.size(64.dp),
         )
+    }
+}
+
+@Composable
+private fun UpdateCard(release: AppRelease, onOpenUrl: (String) -> Unit) {
+    ElevatedCard(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = stringResource(R.string.update_available_title, release.version.toString()),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = stringResource(R.string.update_available_text),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FilledTonalButton(onClick = { onOpenUrl(release.apkUrl ?: release.pageUrl) }) {
+                    Text(stringResource(R.string.update_action_download))
+                }
+                TextButton(onClick = { onOpenUrl(release.pageUrl) }) {
+                    Text(stringResource(R.string.update_action_notes))
+                }
+            }
+        }
     }
 }
 
@@ -196,6 +232,7 @@ private fun HomeScreenPreview() {
             ),
             onToggleService = {},
             onGrantOverlay = {},
+            onOpenUrl = {},
             onOpenLanguages = {},
             onOpenSettings = {},
             onOpenSupport = {},

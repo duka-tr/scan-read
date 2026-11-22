@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import tr.duka.scanread.BuildConfig
 import tr.duka.scanread.ScanReadApp
 import tr.duka.scanread.core.locale.LanguageNames
 import tr.duka.scanread.core.settings.AppSettings
@@ -16,6 +17,9 @@ import tr.duka.scanread.translate.mlkit.MlKitModelStore
 import tr.duka.scanread.translate.mlkit.resolveLanguagePair
 import tr.duka.scanread.translate.mlkit.translatableLanguages
 import tr.duka.scanread.translate.opusmt.HighQualityModels
+import tr.duka.scanread.update.AppRelease
+import tr.duka.scanread.update.AppVersion
+import tr.duka.scanread.update.UpdateChecker
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -27,6 +31,15 @@ import java.util.Locale
 /** State of the basic (ML Kit) language files for the selected pair. */
 enum class ModelState { CHECKING, MISSING, DOWNLOADING, READY, ERROR }
 
+/** Update check state for builds distributed outside Google Play. */
+sealed interface UpdateState {
+    data object Idle : UpdateState
+    data object Checking : UpdateState
+    data object UpToDate : UpdateState
+    data object Failed : UpdateState
+    data class Available(val release: AppRelease) : UpdateState
+}
+
 /** A selectable language with its name in the user's language. */
 data class LanguageOption(val code: String, val name: String)
 
@@ -37,7 +50,16 @@ class MainViewModel(
     private val settingsRepository: SettingsRepository,
     private val basicModels: TranslationModelStore,
     private val highQualityModels: HighQualityModels,
+    private val updateChecker: UpdateChecker?,
 ) : ViewModel() {
+
+    private val _update = MutableStateFlow<UpdateState>(UpdateState.Idle)
+    /** Newer app version, when one is found; always idle in Play builds. */
+    val update: StateFlow<UpdateState> = _update.asStateFlow()
+
+    /** Whether this build can check for updates at all (not in Play builds). */
+    val canCheckUpdates: Boolean get() = updateChecker != null
+    private var autoCheckDone = false
 
     private val _settings = MutableStateFlow<AppSettings?>(null)
     /** `null` until the stored settings are loaded. */
@@ -64,6 +86,7 @@ class MainViewModel(
         viewModelScope.launch {
             settingsRepository.settings.collect { loaded ->
                 _settings.value = loaded
+                maybeAutoCheckForUpdates(loaded)
                 val pair = resolveLanguagePair(loaded)
                 if (pair != _languagePair.value || _basicModel.value == ModelState.CHECKING) {
                     _languagePair.value = pair
@@ -104,6 +127,38 @@ class MainViewModel(
 
     fun setSkipSoundEffects(skip: Boolean) {
         viewModelScope.launch { settingsRepository.setSkipSoundEffects(skip) }
+    }
+
+    fun setAutoCheckUpdates(enabled: Boolean) {
+        viewModelScope.launch { settingsRepository.setAutoCheckUpdates(enabled) }
+    }
+
+    /** Checks GitHub for a newer version now (user request). */
+    fun checkForUpdates() {
+        val checker = updateChecker ?: return
+        if (_update.value == UpdateState.Checking) return
+        _update.value = UpdateState.Checking
+        viewModelScope.launch {
+            _update.value = when (val result = checker.check()) {
+                is UpdateChecker.Result.Available -> UpdateState.Available(result.release)
+                UpdateChecker.Result.UpToDate -> UpdateState.UpToDate
+                UpdateChecker.Result.Failed -> UpdateState.Failed
+            }
+        }
+    }
+
+    /** At most once a day, when enabled; a silent failure leaves the state idle. */
+    private fun maybeAutoCheckForUpdates(settings: AppSettings) {
+        val checker = updateChecker ?: return
+        if (autoCheckDone || !settings.autoCheckUpdates) return
+        val now = System.currentTimeMillis()
+        if (now - settings.lastUpdateCheck < AUTO_CHECK_INTERVAL_MS) return
+        autoCheckDone = true
+        viewModelScope.launch {
+            val result = checker.check()
+            if (result is UpdateChecker.Result.Available) _update.value = UpdateState.Available(result.release)
+            if (result != UpdateChecker.Result.Failed) settingsRepository.setLastUpdateCheck(now)
+        }
     }
 
     fun completeOnboarding() {
@@ -153,11 +208,17 @@ class MainViewModel(
 
     companion object {
         private const val TAG = "MainViewModel"
+        private const val AUTO_CHECK_INTERVAL_MS = 24L * 60 * 60 * 1000
 
         val Factory = viewModelFactory {
             initializer {
                 val app = checkNotNull(this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY]) as ScanReadApp
-                MainViewModel(app.settings, MlKitModelStore(), app.highQualityModels)
+                val updateChecker = if (BuildConfig.UPDATE_CHECK_ENABLED) {
+                    AppVersion.parse(BuildConfig.VERSION_NAME)?.let { UpdateChecker(BuildConfig.RELEASES_API_URL, it) }
+                } else {
+                    null
+                }
+                MainViewModel(app.settings, MlKitModelStore(), app.highQualityModels, updateChecker)
             }
         }
     }

@@ -116,4 +116,15 @@
     <string name="support_free_text">ScanRead ücretsiz, reklamsız ve açık kaynaklıdır. En iyi destek; projeye GitHub\'da yıldız vermek, sorunları bildirmek ve başkalarına önermektir.</string>
     <string name="support_star_github">GitHub\'da yıldız ver</string>
     <string name="support_visit_website">duka.tr\'yi ziyaret et</string>
+    <string name="update_available_title">ScanRead %1$s hazır</string>
+    <string name="update_available_text">Yeni sürümü indirip açarak kurun. Ayarlarınız ve dil dosyalarınız korunur.</string>
+    <string name="update_action_download">İndir</string>
+    <string name="update_action_notes">Yenilikler</string>
+    <string name="update_check">Güncellemeleri denetle</string>
+    <string name="update_checking">Denetleniyor…</string>
+    <string name="update_up_to_date">En güncel sürümü kullanıyorsunuz.</string>
+    <string name="update_failed">Denetlenemedi. Bağlantınızı kontrol edip tekrar deneyin.</string>
+    <string name="update_available_tap">%1$s sürümü hazır. İndirmek için dokunun.</string>
+    <string name="settings_auto_update_check">Güncellemeleri otomatik denetle</string>
+    <string name="settings_auto_update_check_summary">Uygulama açıldığında günde bir kez. GitHub\'dan yalnızca sürüm listesi istenir.</string>
 </resources>

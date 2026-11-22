@@ -1,6 +1,8 @@
 package tr.duka.scanread.ui.home
 
 import android.app.Activity
+import android.content.Intent
+import android.net.Uri
 import android.media.projection.MediaProjectionManager
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -20,6 +22,7 @@ import tr.duka.scanread.service.ScreenTranslateService
 import tr.duka.scanread.translate.opusmt.HighQualityModels
 import tr.duka.scanread.ui.MainViewModel
 import tr.duka.scanread.ui.ModelState
+import tr.duka.scanread.ui.UpdateState
 
 /** Wires the home screen to permissions, the capture consent dialog and the translation service. */
 @Composable
@@ -35,6 +38,7 @@ fun HomeRoute(
     val pair by viewModel.languagePair.collectAsStateWithLifecycle()
     val basic by viewModel.basicModel.collectAsStateWithLifecycle()
     val highQuality by viewModel.highQualityModel.collectAsStateWithLifecycle()
+    val update by viewModel.update.collectAsStateWithLifecycle()
 
     // Permissions and installed models may change while the app is in the background.
     LifecycleResumeEffect(Unit) {
@@ -72,7 +76,9 @@ fun HomeRoute(
                 LanguageNames.displayName(pair.target),
             ),
             modelSummary = modelSummary,
+            availableUpdate = (update as? UpdateState.Available)?.release,
         ),
+        onOpenUrl = { url -> context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) },
         onToggleService = {
             if (isServiceRunning) {
                 ScreenTranslateService.stop(context)

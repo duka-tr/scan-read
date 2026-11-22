@@ -10,6 +10,8 @@ package tr.duka.scanread.core.settings
  * @property textScale multiplier for translated text size, 0.8..1.3.
  * @property skipSoundEffects leave sound effects and drawn lettering untranslated.
  * @property onboardingDone the first-run guide was completed.
+ * @property autoCheckUpdates look for a new version on GitHub when the app opens (at most daily).
+ * @property lastUpdateCheck time of the last automatic update check (epoch millis).
  */
 data class AppSettings(
     val sourceLanguage: String? = null,
@@ -19,6 +21,8 @@ data class AppSettings(
     val textScale: Float = DEFAULT_TEXT_SCALE,
     val skipSoundEffects: Boolean = true,
     val onboardingDone: Boolean = false,
+    val autoCheckUpdates: Boolean = true,
+    val lastUpdateCheck: Long = 0L,
 ) {
     enum class ButtonSize(val dp: Int) { SMALL(44), MEDIUM(52), LARGE(64) }
 

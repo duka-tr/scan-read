@@ -34,6 +34,16 @@ android {
         // the developer a "trader" whose address is shown publicly. Enable with -Pscanread.tips=true.
         val tipsEnabled = providers.gradleProperty("scanread.tips").getOrElse("false").toBoolean()
         buildConfigField("boolean", "TIPS_ENABLED", tipsEnabled.toString())
+
+        // Where the build is distributed. "github" builds check GitHub releases for updates; Play
+        // builds must not update outside Google Play. Build for Play with -Pscanread.distribution=play.
+        val distribution = providers.gradleProperty("scanread.distribution").getOrElse("github")
+        buildConfigField("boolean", "UPDATE_CHECK_ENABLED", (distribution == "github").toString())
+        buildConfigField(
+            "String",
+            "RELEASES_API_URL",
+            "\"https://api.github.com/repos/duka-tr/scan-read/releases?per_page=20\"",
+        )
     }
 
     signingConfigs {
@@ -131,4 +141,5 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
 
     testImplementation(libs.junit)
+    testImplementation(libs.json)
 }

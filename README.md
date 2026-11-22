@@ -21,7 +21,7 @@ Everything runs locally on the device: no accounts, no ads, no paid APIs, and no
 
 ## Install
 
-Download the latest APK from [Releases](https://github.com/duka-tr/scan-read/releases/latest) and open it on your phone (allow installing from your browser or file manager when asked). The first-run guide walks you through the permissions and the language files.
+Download the latest APK from [Releases](https://github.com/duka-tr/scan-read/releases/latest) and open it on your phone (allow installing from your browser or file manager when asked). The first-run guide walks you through the permissions and the language files. The app tells you when a new version is available.
 
 ## How it works
 
@@ -84,7 +84,7 @@ keyAlias=…
 keyPassword=…
 ```
 
-Optional Gradle properties: `scanread.modelReleasesUrl` (where models are downloaded from) and `scanread.tips=true` (enables optional Google Play tips).
+Optional Gradle properties: `scanread.modelReleasesUrl` (where models are downloaded from), `scanread.tips=true` (enables optional Google Play tips) and `scanread.distribution=play` (Google Play builds: turns off the in-app update check, since Play handles updates).
 
 ## Project structure
 
@@ -137,7 +137,7 @@ Translations of the app are welcome as pull requests.
 
 ## Privacy
 
-ScanRead processes screen contents only when you tap the floating button, entirely on your device. It does not collect, store, or transmit screen contents, personal data or analytics. The internet is used only to download language files. See the [privacy policy](https://duka.tr/scanread/privacy).
+ScanRead processes screen contents only when you tap the floating button, entirely on your device. It does not collect, store, or transmit screen contents, personal data or analytics. The internet is used only to download language files and, in builds from GitHub, to check the release list for a newer version (at most daily; can be turned off). See the [privacy policy](https://duka.tr/scanread/privacy/).
 
 ## Support and contact
 

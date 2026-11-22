@@ -25,8 +25,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import tr.duka.scanread.BuildConfig
 import tr.duka.scanread.R
+import tr.duka.scanread.ui.MainViewModel
+import tr.duka.scanread.ui.UpdateState
 import tr.duka.scanread.ui.components.ScreenScaffold
 
 /**
@@ -55,8 +58,9 @@ private val NOTICES = listOf(
 )
 
 @Composable
-fun AboutScreen(onBack: () -> Unit) {
+fun AboutScreen(viewModel: MainViewModel, onBack: () -> Unit) {
     val context = LocalContext.current
+    val update by viewModel.update.collectAsStateWithLifecycle()
     var shownLicense by remember { mutableStateOf<Notice?>(null) }
     val openUrl: (String) -> Unit = { url -> context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
 
@@ -71,6 +75,26 @@ fun AboutScreen(onBack: () -> Unit) {
                 headlineContent = { Text(stringResource(R.string.app_name), style = MaterialTheme.typography.titleLarge) },
                 supportingContent = { Text(stringResource(R.string.about_version, BuildConfig.VERSION_NAME)) },
             )
+            if (viewModel.canCheckUpdates) {
+                val available = (update as? UpdateState.Available)?.release
+                ListItem(
+                    headlineContent = { Text(stringResource(R.string.update_check)) },
+                    supportingContent = {
+                        val status = when (val state = update) {
+                            UpdateState.Checking -> stringResource(R.string.update_checking)
+                            UpdateState.UpToDate -> stringResource(R.string.update_up_to_date)
+                            UpdateState.Failed -> stringResource(R.string.update_failed)
+                            is UpdateState.Available ->
+                                stringResource(R.string.update_available_tap, state.release.version.toString())
+                            UpdateState.Idle -> null
+                        }
+                        status?.let { Text(it) }
+                    },
+                    modifier = Modifier.clickable {
+                        if (available != null) openUrl(available.apkUrl ?: available.pageUrl) else viewModel.checkForUpdates()
+                    },
+                )
+            }
             Text(
                 text = stringResource(R.string.home_subtitle),
                 style = MaterialTheme.typography.bodyMedium,

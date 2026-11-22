@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
@@ -42,6 +43,10 @@ class SettingsRepository(context: Context) {
 
     suspend fun setOnboardingDone() = store.edit { it[ONBOARDING_DONE] = true }
 
+    suspend fun setAutoCheckUpdates(enabled: Boolean) = store.edit { it[AUTO_CHECK_UPDATES] = enabled }
+
+    suspend fun setLastUpdateCheck(timeMillis: Long) = store.edit { it[LAST_UPDATE_CHECK] = timeMillis }
+
     private fun Preferences.toSettings() = AppSettings(
         sourceLanguage = this[SOURCE],
         targetLanguage = this[TARGET],
@@ -52,6 +57,8 @@ class SettingsRepository(context: Context) {
         textScale = this[TEXT_SCALE] ?: AppSettings.DEFAULT_TEXT_SCALE,
         skipSoundEffects = this[SKIP_SOUND_EFFECTS] ?: true,
         onboardingDone = this[ONBOARDING_DONE] ?: false,
+        autoCheckUpdates = this[AUTO_CHECK_UPDATES] ?: true,
+        lastUpdateCheck = this[LAST_UPDATE_CHECK] ?: 0L,
     )
 
     private companion object {
@@ -62,5 +69,7 @@ class SettingsRepository(context: Context) {
         val TEXT_SCALE = floatPreferencesKey("text_scale")
         val SKIP_SOUND_EFFECTS = booleanPreferencesKey("skip_sound_effects")
         val ONBOARDING_DONE = booleanPreferencesKey("onboarding_done")
+        val AUTO_CHECK_UPDATES = booleanPreferencesKey("auto_check_updates")
+        val LAST_UPDATE_CHECK = longPreferencesKey("last_update_check")
     }
 }

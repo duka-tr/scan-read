@@ -72,7 +72,7 @@ fun AppNavHost(viewModel: MainViewModel = viewModel(factory = MainViewModel.Fact
                 onOpenSupport = { navController.navigate(Routes.SUPPORT) },
             )
         }
-        composable(Routes.ABOUT) { AboutScreen(onBack = back) }
+        composable(Routes.ABOUT) { AboutScreen(viewModel = viewModel, onBack = back) }
         composable(Routes.SUPPORT) { SupportRoute(onBack = back) }
     }
 }

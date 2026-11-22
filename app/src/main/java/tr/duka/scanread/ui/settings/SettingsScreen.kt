@@ -116,6 +116,15 @@ fun SettingsScreen(
                     )
                 }
             }
+            if (viewModel.canCheckUpdates) {
+                ListItem(
+                    headlineContent = { Text(stringResource(R.string.settings_auto_update_check)) },
+                    supportingContent = { Text(stringResource(R.string.settings_auto_update_check_summary)) },
+                    trailingContent = {
+                        Switch(checked = current.autoCheckUpdates, onCheckedChange = viewModel::setAutoCheckUpdates)
+                    },
+                )
+            }
             NavigationItem(stringResource(R.string.home_support), onOpenSupport)
             NavigationItem(stringResource(R.string.about_title), onOpenAbout)
         }
