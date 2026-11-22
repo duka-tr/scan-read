@@ -11,6 +11,7 @@ import android.view.WindowManager
 import android.widget.ImageView
 import com.scanread.R
 import com.scanread.capture.ScreenMetrics
+import com.scanread.text.model.Box
 import kotlin.math.abs
 
 /**
@@ -67,6 +68,10 @@ class FloatingButton(
     }
 
     /** Dims the button while a capture is being processed. */
+    /** Where the button currently is on screen. */
+    val screenBounds: Box
+        get() = Box(layoutParams.x, layoutParams.y, layoutParams.x + sizePx, layoutParams.y + sizePx)
+
     fun setBusy(busy: Boolean) {
         view.alpha = if (busy) BUSY_ALPHA else 1f
     }

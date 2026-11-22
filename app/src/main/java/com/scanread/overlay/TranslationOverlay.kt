@@ -6,15 +6,21 @@ import android.graphics.Canvas
 import android.graphics.PixelFormat
 import android.os.Build
 import android.view.Gravity
+import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import androidx.core.graphics.withTranslation
 import com.scanread.R
+import com.scanread.text.model.Box
 import java.util.Locale
 
 /**
  * Full-screen overlay that covers the original text and draws translations in its place.
- * Tapping it dismisses it. Coordinates are in screen pixels, matching the screen capture.
+ * Coordinates are in screen pixels, matching the screen capture.
+ *
+ * Any touch dismisses it ([onDismissRequest]); the touch is not passed on, because Android shows
+ * touch-transparent overlays of other apps at most 80% opaque, which would let the original text
+ * show through. The service also dismisses it when the screen underneath changes.
  */
 class TranslationOverlay(
     private val context: Context,
@@ -50,12 +56,14 @@ class TranslationOverlay(
     var isShowing: Boolean = false
         private set
 
-    fun show(items: List<TranslationRenderer.Item>) {
+    /** Shows [items] and returns the screen areas the overlay draws on. */
+    fun show(items: List<TranslationRenderer.Item>): List<Box> {
         view.setItems(items)
         if (!isShowing) {
             windowManager.addView(view, layoutParams)
             isShowing = true
         }
+        return view.drawnAreas
     }
 
     fun dismiss() {
@@ -74,10 +82,19 @@ private class TranslationView(context: Context, textLocale: Locale) : View(conte
     private val screenLocation = IntArray(2)
     private var prepared: List<TranslationRenderer.Prepared> = emptyList()
 
+    val drawnAreas: List<Box> get() = prepared.map { it.drawnBounds }
+
     fun setItems(items: List<TranslationRenderer.Item>) {
         prepared.forEach { it.recycle() }
         prepared = items.map(renderer::prepare)
         invalidate()
+    }
+
+    @SuppressLint("ClickableViewAccessibility") // The touch is forwarded through performClick().
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        // React on touch-down: a swipe meant to scroll the page removes the translation right away.
+        if (event.actionMasked == MotionEvent.ACTION_DOWN) performClick()
+        return true
     }
 
     override fun onDraw(canvas: Canvas) {

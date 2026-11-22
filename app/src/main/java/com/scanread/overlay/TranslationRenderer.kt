@@ -13,7 +13,9 @@ import android.text.TextPaint
 import androidx.core.graphics.withTranslation
 import com.scanread.R
 import com.scanread.render.BlockSurface
+import com.scanread.text.model.Box
 import java.util.Locale
+import kotlin.math.ceil
 
 /**
  * Draws covers and translations in screen coordinates. Used by the on-screen overlay and by
@@ -42,6 +44,14 @@ class TranslationRenderer(
         internal val textTop: Float,
         val fits: Boolean,
     ) {
+        /** Everything this item draws (cover and text), in screen pixels. */
+        val drawnBounds: Box
+            get() {
+                val bounds = RectF(coverRect)
+                bounds.union(textLeft, textTop, textLeft + layout.width, textTop + layout.height)
+                return Box(bounds.left.toInt(), bounds.top.toInt(), ceil(bounds.right).toInt(), ceil(bounds.bottom).toInt())
+            }
+
         fun recycle() {
             cover?.recycle()
         }

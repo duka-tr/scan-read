@@ -16,9 +16,9 @@ import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.scanread.R
+import com.scanread.core.locale.LanguageNames
 import com.scanread.core.permission.Permissions
 import com.scanread.service.ScreenTranslateService
-import java.util.Locale
 
 /** Wires the home screen to permissions, system dialogs, the translation service and model state. */
 @Composable
@@ -60,8 +60,8 @@ fun HomeRoute(viewModel: HomeViewModel = viewModel(factory = HomeViewModel.Facto
             showNotificationPermission = Permissions.isNotificationPermissionRequired,
             notificationsGranted = notificationsGranted,
             isServiceRunning = isServiceRunning,
-            sourceLanguageName = languageDisplayName(viewModel.languagePair.source),
-            targetLanguageName = languageDisplayName(viewModel.languagePair.target),
+            sourceLanguageName = LanguageNames.displayName(viewModel.languagePair.source),
+            targetLanguageName = LanguageNames.displayName(viewModel.languagePair.target),
             modelState = modelState,
             highQuality = highQuality,
             highQualitySizeMb = viewModel.highQualitySizeMb,
@@ -78,12 +78,4 @@ fun HomeRoute(viewModel: HomeViewModel = viewModel(factory = HomeViewModel.Facto
         },
         onStopService = { ScreenTranslateService.stop(context) },
     )
-}
-
-/** Language name in the user's language, e.g. "en" → "English" / "İngilizce". */
-private fun languageDisplayName(code: String): String {
-    val displayLocale = Locale.getDefault()
-    return Locale.forLanguageTag(code)
-        .getDisplayLanguage(displayLocale)
-        .replaceFirstChar { it.titlecase(displayLocale) }
 }

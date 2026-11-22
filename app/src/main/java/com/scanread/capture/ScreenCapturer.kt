@@ -73,6 +73,26 @@ class ScreenCapturer(
         latestImage?.toBitmap()
     }
 
+    /**
+     * Luminance grid of the most recent frame (see [ScreenChangeDetector.grid]), read straight from
+     * the frame buffer without copying the image, or `null` if no frame has arrived yet.
+     */
+    fun latestLuminanceGrid(detector: ScreenChangeDetector): IntArray? = synchronized(lock) {
+        val image = latestImage ?: return null
+        val plane = image.planes[0]
+        val buffer = plane.buffer
+        val rowStride = plane.rowStride
+        val pixelStride = plane.pixelStride
+        // RGBA_8888: bytes are R, G, B, A.
+        detector.grid { x, y ->
+            val offset = y * rowStride + x * pixelStride
+            val r = buffer.get(offset).toInt() and 0xFF
+            val g = buffer.get(offset + 1).toInt() and 0xFF
+            val b = buffer.get(offset + 2).toInt() and 0xFF
+            (r * 299 + g * 587 + b * 114) / 1000
+        }
+    }
+
     fun release() {
         virtualDisplay?.release()
         virtualDisplay = null

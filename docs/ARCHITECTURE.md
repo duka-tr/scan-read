@@ -108,7 +108,8 @@ Captures may contain third-party content; keep them out of version control.
    2. registers a `MediaProjection.Callback` (required on Android 14+ before creating a virtual display),
    3. starts `ScreenCapturer` and shows the `FloatingButton`.
 4. Tapping the floating button hides it, waits briefly for a fresh frame, grabs the latest image and runs the text pipeline. Results are drawn by `TextBlockOverlay`; tapping the overlay or the button again dismisses them.
-5. The session ends from the notification action, the home screen, or the system's capture indicator; `onDestroy` releases every resource.
+5. While a translation is shown, `ScreenChangeDetector` compares a coarse luminance grid of the live screen (read straight from the capture buffer, 4×/s) with the grid of the translated capture, ignoring the overlay's own drawings, the floating button and system bars. When the screen underneath changes — another app, the home screen, scrolling — the overlay is removed. A translation that finishes after the screen already changed is not shown. Touching the overlay also removes it; it does not pass touches through, because Android draws touch-transparent overlays of other apps at most 80% opaque.
+6. The ongoing notification (custom layout) shows the language pair and a close button that stops the service. The session also ends from the notification action, the home screen, or the system's capture indicator; `onDestroy` releases every resource.
 
 Capture consent is single-use on recent Android versions, so each new session asks for it again.
 

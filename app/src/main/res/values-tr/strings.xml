@@ -26,7 +26,6 @@
     <string name="notification_channel_name">Ekran çevirisi</string>
     <string name="notification_channel_description">Ekran çevirisi açıkken gösterilir.</string>
     <string name="notification_title">Ekran çevirisi açık</string>
-    <string name="notification_text">Ekranı çevirmek için yüzen butona dokunun.</string>
     <string name="notification_action_stop">Durdur</string>
 
     <!-- Floating button and capture -->
@@ -51,6 +50,7 @@
     <string name="translation_action_download">İndir</string>
     <string name="translation_action_delete">Sil</string>
     <string name="translation_model_required">Önce uygulamadan dil dosyalarını indirin.</string>
+    <string name="screen_changed_during_translation">Çeviri sırasında ekran değişti. Butona tekrar dokunun.</string>
     <string name="translation_failed">Çeviri başarısız oldu. Lütfen tekrar deneyin.</string>
     <string name="overlay_content_description">Çevrilmiş metin. Kapatmak için dokunun.</string>
 </resources>

@@ -13,6 +13,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
 import android.util.Log
+import android.widget.RemoteViews
 import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.core.app.NotificationCompat
@@ -24,7 +25,9 @@ import androidx.lifecycle.lifecycleScope
 import com.scanread.BuildConfig
 import com.scanread.R
 import com.scanread.capture.ScreenCapturer
+import com.scanread.capture.ScreenChangeDetector
 import com.scanread.capture.SystemBarAreas
+import com.scanread.core.locale.LanguageNames
 import com.scanread.core.notification.NotificationChannels
 import com.scanread.core.permission.Permissions
 import com.scanread.ocr.MlKitOcrEngine
@@ -37,6 +40,7 @@ import com.scanread.pipeline.ScreenTextAnalyzer
 import com.scanread.render.SoundEffectFilter
 import com.scanread.text.TextNormalizer
 import com.scanread.text.WordSegmenter
+import com.scanread.text.model.Box
 import com.scanread.translate.opusmt.OpusMtBundle
 import com.scanread.translate.CachingTranslationEngine
 import com.scanread.translate.LanguagePair
@@ -72,6 +76,7 @@ class ScreenTranslateService : LifecycleService() {
     private var floatingButton: FloatingButton? = null
     private var translationOverlay: TranslationOverlay? = null
     private var captureJob: Job? = null
+    private var changeWatchJob: Job? = null
 
     private val languagePair: LanguagePair by lazy { defaultLanguagePair() }
     private val modelStore: TranslationModelStore = MlKitModelStore()
@@ -193,6 +198,11 @@ class ScreenTranslateService : LifecycleService() {
         button.setBusy(true)
         try {
             val ignoredAreas = SystemBarAreas.current(this)
+            // Coarse picture of the screen, to notice later when it no longer matches the translation.
+            val changeDetector = ScreenChangeDetector(bitmap.width, bitmap.height)
+            val baseline = withContext(Dispatchers.Default) {
+                changeDetector.grid { x, y -> ScreenChangeDetector.luminance(bitmap.getPixel(x, y)) }
+            }
             val startedAt = SystemClock.elapsedRealtime()
 
             val analysis = runStep(R.string.ocr_failed) { screenAnalyzer.analyze(bitmap, ignoredAreas) } ?: return
@@ -214,7 +224,13 @@ class ScreenTranslateService : LifecycleService() {
                 translations = translated.map { it.translation },
                 inBalloon = analysis.surfaces.map { it.isShaped },
             )
-            translationOverlay?.show(
+            // Translating takes a moment; if the user scrolled or switched apps meanwhile, the result
+            // would land on the wrong content.
+            if (screenChanged(changeDetector, baseline, ignoredAreas + button.screenBounds)) {
+                showToast(getString(R.string.screen_changed_during_translation))
+                return
+            }
+            val drawnAreas = translationOverlay?.show(
                 translated.indices.filterNot { soundEffects[it] }.map { index ->
                     val block = translated[index]
                     TranslationRenderer.Item(
@@ -223,7 +239,8 @@ class ScreenTranslateService : LifecycleService() {
                         originalLineHeight = block.block.box.height.toFloat() / block.block.lines.size,
                     )
                 },
-            )
+            ) ?: return
+            dismissWhenScreenChanges(changeDetector, baseline, ignoredAreas + drawnAreas)
         } finally {
             bitmap.recycle()
             button.setBusy(false)
@@ -241,7 +258,31 @@ class ScreenTranslateService : LifecycleService() {
         null
     }
 
+    private suspend fun screenChanged(detector: ScreenChangeDetector, baseline: IntArray, ignored: List<Box>): Boolean {
+        val current = withContext(Dispatchers.Default) { capturer?.latestLuminanceGrid(detector) } ?: return false
+        return detector.hasChanged(baseline, current, ignored)
+    }
+
+    /**
+     * Removes the translation as soon as the screen below no longer matches it (another app, the
+     * home screen, scrolling). The overlay's own drawings and the floating button are ignored.
+     */
+    private fun dismissWhenScreenChanges(detector: ScreenChangeDetector, baseline: IntArray, ignored: List<Box>) {
+        changeWatchJob?.cancel()
+        changeWatchJob = lifecycleScope.launch {
+            while (translationOverlay?.isShowing == true) {
+                delay(CHANGE_CHECK_INTERVAL_MS)
+                val skip = ignored + listOfNotNull(floatingButton?.screenBounds)
+                if (screenChanged(detector, baseline, skip)) {
+                    translationOverlay?.dismiss()
+                    break
+                }
+            }
+        }
+    }
+
     private fun dismissOverlay() {
+        changeWatchJob?.cancel()
         translationOverlay?.dismiss()
     }
 
@@ -254,6 +295,7 @@ class ScreenTranslateService : LifecycleService() {
 
     override fun onDestroy() {
         captureJob?.cancel()
+        changeWatchJob?.cancel()
         translationOverlay?.dismiss()
         translationOverlay = null
         floatingButton?.remove()
@@ -288,12 +330,27 @@ class ScreenTranslateService : LifecycleService() {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
 
+        val title = getString(R.string.notification_title)
+        val languages = getString(
+            R.string.translation_languages,
+            LanguageNames.displayName(languagePair.source),
+            LanguageNames.displayName(languagePair.target),
+        )
+        // Custom body: status, language pair and a close icon that stops translation directly.
+        val content = RemoteViews(packageName, R.layout.notification_translation).apply {
+            setTextViewText(R.id.notification_title, title)
+            setTextViewText(R.id.notification_languages, languages)
+            setOnClickPendingIntent(R.id.notification_stop, stopIntent)
+        }
+
         return NotificationCompat.Builder(this, NotificationChannels.SCREEN_TRANSLATION)
             .setSmallIcon(R.drawable.ic_translate)
-            .setContentTitle(getString(R.string.notification_title))
-            .setContentText(getString(R.string.notification_text))
+            // Plain title and text remain for places that do not show custom views.
+            .setContentTitle(title)
+            .setContentText(languages)
+            .setStyle(NotificationCompat.DecoratedCustomViewStyle())
+            .setCustomContentView(content)
             .setContentIntent(openAppIntent)
-            .addAction(0, getString(R.string.notification_action_stop), stopIntent)
             .setOngoing(true)
             .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .build()
@@ -314,6 +371,7 @@ class ScreenTranslateService : LifecycleService() {
         private const val REQUEST_OPEN_APP = 0
         private const val REQUEST_STOP = 1
         private const val CAPTURE_SETTLE_DELAY_MS = 150L
+        private const val CHANGE_CHECK_INTERVAL_MS = 250L
 
         /** Score for apostrophe-less contractions ("youve") so glued words can split into them. */
         private const val CONTRACTION_WORD_SCORE = -7f
