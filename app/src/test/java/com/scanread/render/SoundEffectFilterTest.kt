@@ -51,6 +51,14 @@ class SoundEffectFilterTest {
     }
 
     @Test
+    fun `reading direction markers are left alone, even with OCR noise`() {
+        val blocks = listOf(block("READ THIS WAY", 30), block("READ <THIS < WAY", 30), block("READY TO GO NOW", 30))
+        val translations = listOf("BU ŞEKİLDE OKU", "BU YOLU OKU", "ŞİMDİ GİTMEYE HAZIR")
+
+        assertEquals(listOf(true, true, false), filter.detect(blocks, translations, listOf(false, false, false)))
+    }
+
+    @Test
     fun `text inside balloons is always translated`() {
         val blocks = listOf(block("HMM", 30))
 

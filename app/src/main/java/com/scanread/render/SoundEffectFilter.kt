@@ -11,7 +11,8 @@ import kotlin.math.min
  * that should stay untouched. Only text outside speech balloons is considered:
  *
  * - lettering much taller than the page's typical line height, or
- * - a single word that the translation engine leaves practically unchanged.
+ * - a single word that the translation engine leaves practically unchanged, or
+ * - the "READ THIS WAY" reading-direction marker printed on manga pages.
  */
 class SoundEffectFilter(
     private val maxLineHeightRatio: Float = 1.6f,
@@ -31,6 +32,7 @@ class SoundEffectFilter(
             val block = blocks[index]
             when {
                 inBalloon[index] -> false
+                isReadingDirectionMarker(block.sourceText) -> true
                 typicalLineHeight > 0 && lineHeight(block) > typicalLineHeight * maxLineHeightRatio &&
                     distinctWords(block.sourceText) <= maxDistinctWordsInLargeLettering -> true
                 block.sourceText.split(' ').size <= maxWords &&
@@ -41,6 +43,12 @@ class SoundEffectFilter(
     }
 
     private fun lineHeight(block: TextBlock): Float = block.box.height.toFloat() / block.lines.size
+
+    /** The "READ THIS WAY" arrow that publishers print on pages, often read with OCR noise. */
+    private fun isReadingDirectionMarker(text: String): Boolean {
+        val words = text.split(' ').map(::lettersOnly).filter(String::isNotEmpty)
+        return words.size in 1..MAX_MARKER_WORDS && words.first() == READING_MARKER_START
+    }
 
     private fun distinctWords(text: String): Int =
         text.split(' ').map(::lettersOnly).filter(String::isNotEmpty).toSet().size
@@ -53,6 +61,8 @@ class SoundEffectFilter(
 
     companion object {
         private val MARKS = Regex("\\p{M}+")
+        private const val READING_MARKER_START = "READ"
+        private const val MAX_MARKER_WORDS = 3
 
         /** 1 − normalized edit distance between the letters of [a] and [b], ignoring case and accents. */
         fun similarity(a: String, b: String): Float {
