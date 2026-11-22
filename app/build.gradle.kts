@@ -17,6 +17,12 @@ android {
         versionCode = 1
         versionName = "0.1.0"
 
+        // Where downloadable translation models are published (GitHub release assets). Forks and
+        // local testing can override it: -Pscanread.modelReleasesUrl=http://localhost:8000
+        val modelReleasesUrl = providers.gradleProperty("scanread.modelReleasesUrl")
+            .getOrElse("https://github.com/DursunKm/scan-read/releases/download")
+        buildConfigField("String", "MODEL_RELEASES_URL", "\"$modelReleasesUrl\"")
+
         ndk {
             // Phones (64/32-bit ARM) and x86_64 emulators; keeps native libraries out of other ABIs.
             abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86_64")

@@ -38,7 +38,11 @@
     <string name="ocr_failed">Metin tanıma başarısız oldu. Lütfen tekrar deneyin.</string>
 
     <!-- Translation -->
-    <string name="translation_engine_high_quality">Hazır. Yüksek kaliteli internetsiz çeviri (Opus-MT).</string>
+    <string name="translation_high_quality_title">Yüksek kaliteli çeviri (Opus-MT)</string>
+    <string name="translation_high_quality_missing">Bir kez indirilmesi gerekiyor (yaklaşık %1$d MB). Sonrasında internetsiz çalışır.</string>
+    <string name="translation_high_quality_downloading">İndiriliyor… %%%1$d</string>
+    <string name="translation_high_quality_error">İndirme başarısız oldu. Bağlantınızı kontrol edip tekrar deneyin; kaldığı yerden devam eder.</string>
+    <string name="translation_basic_title">Temel çeviri (ML Kit)</string>
     <string name="translation_model_checking">Dil dosyaları kontrol ediliyor…</string>
     <string name="translation_model_missing">Dil dosyalarının bir kez indirilmesi gerekiyor (yaklaşık 30 MB). Sonrasında çeviri internetsiz çalışır.</string>
     <string name="translation_model_downloading">Dil dosyaları indiriliyor…</string>

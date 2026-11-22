@@ -71,16 +71,11 @@ class OpusMtBundle(val directory: File) {
 
         private const val MODELS_DIRECTORY = "models"
 
-        /** Bundle directory name per supported language pair. */
-        private val BUNDLES = mapOf(
-            LanguagePair("en", "tr") to "opus-mt-en-tr",
-        )
-
-        fun isSupported(pair: LanguagePair): Boolean = pair in BUNDLES
+        fun isSupported(pair: LanguagePair): Boolean = OpusMtCatalog.entry(pair) != null
 
         /** Where the bundle for [pair] lives under [filesDir], or `null` if the pair is not supported. */
         fun locate(filesDir: File, pair: LanguagePair): OpusMtBundle? =
-            BUNDLES[pair]?.let { OpusMtBundle(File(File(filesDir, MODELS_DIRECTORY), it)) }
+            OpusMtCatalog.entry(pair)?.let { OpusMtBundle(File(File(filesDir, MODELS_DIRECTORY), it.bundleName)) }
 
         /** The installed bundle for [pair], or `null` if it is missing or incomplete. */
         fun installed(filesDir: File, pair: LanguagePair): OpusMtBundle? =

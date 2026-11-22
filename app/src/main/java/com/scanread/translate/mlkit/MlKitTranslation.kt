@@ -43,7 +43,7 @@ class MlKitModelStore : TranslationModelStore {
     override suspend fun isDownloaded(pair: LanguagePair): Boolean =
         listOf(pair.source, pair.target).all { manager.isModelDownloaded(model(it)).await() }
 
-    override suspend fun download(pair: LanguagePair) {
+    override suspend fun download(pair: LanguagePair, onProgress: (Float) -> Unit) {
         val conditions = DownloadConditions.Builder().build()
         listOf(pair.source, pair.target).forEach { manager.download(model(it), conditions).await() }
     }

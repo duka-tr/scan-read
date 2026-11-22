@@ -30,6 +30,27 @@ To verify the app's tokenizer against the real SentencePiece library:
 SCANREAD_OPUS_BUNDLE=build/opus-mt-en-tr ./gradlew testDebugUnitTest --tests '*SentencePieceTokenizerTest*'
 ```
 
+## Publishing a bundle
+
+The app downloads bundles from GitHub release assets of this repository and verifies every file against the size and SHA-256 pinned in `OpusMtCatalog.kt`.
+
+1. Create a release with the tag listed in the catalog (e.g. `model-opus-mt-en-tr-v1`) and upload `encoder.onnx`, `decoder.onnx`, `vocab.txt`, `source_pieces.tsv`, `model.properties` and `ATTRIBUTION.txt` as assets:
+   ```bash
+   gh release create model-opus-mt-en-tr-v1 build/opus-mt-en-tr/{encoder.onnx,decoder.onnx,vocab.txt,source_pieces.tsv,model.properties,ATTRIBUTION.txt} \
+     --title "Opus-MT en→tr model (4-bit)" --notes-file build/opus-mt-en-tr/ATTRIBUTION.txt
+   ```
+2. When a bundle changes, publish it under a new tag and update the tag, sizes and digests in `OpusMtCatalog.kt` (`sha256sum <file>`).
+
+The base URL comes from the Gradle property `scanread.modelReleasesUrl` (default: this repository's releases). To test downloads without publishing, serve a directory containing `<tag>/<files>` locally and forward the port to the device:
+
+```bash
+python -m http.server 8765 --bind 127.0.0.1      # in the directory that contains <tag>/
+adb reverse tcp:8765 tcp:8765
+./gradlew installDebug -Pscanread.modelReleasesUrl=http://localhost:8765
+```
+
+Debug builds allow plain HTTP to `localhost` only; release builds require HTTPS.
+
 ## Bundle format
 
 | File | Content |

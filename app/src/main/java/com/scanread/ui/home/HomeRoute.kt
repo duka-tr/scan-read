@@ -29,7 +29,7 @@ fun HomeRoute(viewModel: HomeViewModel = viewModel(factory = HomeViewModel.Facto
     var notificationsGranted by remember { mutableStateOf(Permissions.hasNotificationPermission(context)) }
     val isServiceRunning by ScreenTranslateService.isRunning.collectAsStateWithLifecycle()
     val modelState by viewModel.modelState.collectAsStateWithLifecycle()
-    val highQualityInstalled by viewModel.highQualityInstalled.collectAsStateWithLifecycle()
+    val highQuality by viewModel.highQuality.collectAsStateWithLifecycle()
 
     // Permissions and installed models may change while the app is in the background.
     LifecycleResumeEffect(Unit) {
@@ -63,12 +63,15 @@ fun HomeRoute(viewModel: HomeViewModel = viewModel(factory = HomeViewModel.Facto
             sourceLanguageName = languageDisplayName(viewModel.languagePair.source),
             targetLanguageName = languageDisplayName(viewModel.languagePair.target),
             modelState = modelState,
-            highQualityInstalled = highQualityInstalled,
+            highQuality = highQuality,
+            highQualitySizeMb = viewModel.highQualitySizeMb,
         ),
         onGrantOverlay = { context.startActivity(Permissions.overlaySettingsIntent(context)) },
         onGrantNotifications = { notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS) },
         onDownloadModel = viewModel::downloadModel,
         onDeleteModel = viewModel::deleteModel,
+        onDownloadHighQuality = viewModel::downloadHighQualityModel,
+        onDeleteHighQuality = viewModel::deleteHighQualityModel,
         onStartService = {
             val manager = context.getSystemService(MediaProjectionManager::class.java)
             captureConsentLauncher.launch(manager.createScreenCaptureIntent())

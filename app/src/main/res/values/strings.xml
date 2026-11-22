@@ -45,7 +45,11 @@
 
     <!-- Translation -->
     <string name="translation_languages" translatable="false">%1$s → %2$s</string>
-    <string name="translation_engine_high_quality">Ready. High-quality offline translation (Opus-MT).</string>
+    <string name="translation_high_quality_title">High-quality translation (Opus-MT)</string>
+    <string name="translation_high_quality_missing">Needs a one-time download of about %1$d MB. Works offline afterwards.</string>
+    <string name="translation_high_quality_downloading">Downloading… %1$d%%</string>
+    <string name="translation_high_quality_error">Download failed. Check your connection and try again; it continues where it stopped.</string>
+    <string name="translation_basic_title">Basic translation (ML Kit)</string>
     <string name="translation_model_checking">Checking language files…</string>
     <string name="translation_model_missing">Language files are needed once (about 30 MB). After that, translation works offline.</string>
     <string name="translation_model_downloading">Downloading language files…</string>

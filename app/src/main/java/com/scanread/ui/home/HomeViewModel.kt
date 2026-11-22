@@ -6,11 +6,12 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.scanread.ScanReadApp
 import com.scanread.translate.LanguagePair
 import com.scanread.translate.TranslationModelStore
 import com.scanread.translate.mlkit.MlKitModelStore
 import com.scanread.translate.mlkit.defaultLanguagePair
-import com.scanread.translate.opusmt.OpusMtBundle
+import com.scanread.translate.opusmt.HighQualityModels
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -23,22 +24,24 @@ enum class ModelState { CHECKING, MISSING, DOWNLOADING, READY, ERROR }
 class HomeViewModel(
     val languagePair: LanguagePair,
     private val modelStore: TranslationModelStore,
-    private val isHighQualityModelInstalled: () -> Boolean,
+    private val highQualityModels: HighQualityModels,
 ) : ViewModel() {
 
     private val _modelState = MutableStateFlow(ModelState.CHECKING)
     val modelState: StateFlow<ModelState> = _modelState.asStateFlow()
 
-    private val _highQualityInstalled = MutableStateFlow(false)
-    /** The high-quality (Opus-MT) model is installed and will be used instead of ML Kit. */
-    val highQualityInstalled: StateFlow<Boolean> = _highQualityInstalled.asStateFlow()
+    /** The high-quality (Opus-MT) model; when ready it is used instead of ML Kit. */
+    val highQuality: StateFlow<HighQualityModels.State> = highQualityModels.state
+
+    /** Download size of the high-quality model in megabytes. */
+    val highQualitySizeMb: Int = (highQualityModels.downloadSize / BYTES_PER_MB).toInt()
 
     init {
         refreshModelState()
     }
 
     fun refreshModelState() {
-        _highQualityInstalled.value = isHighQualityModelInstalled()
+        highQualityModels.refresh()
         if (_modelState.value == ModelState.DOWNLOADING) return
         viewModelScope.launch {
             _modelState.value = runModelOperation(failureState = ModelState.ERROR) {
@@ -68,6 +71,10 @@ class HomeViewModel(
         }
     }
 
+    fun downloadHighQualityModel() = highQualityModels.download()
+
+    fun deleteHighQualityModel() = highQualityModels.delete()
+
     private suspend fun runModelOperation(failureState: ModelState, operation: suspend () -> ModelState): ModelState =
         try {
             operation()
@@ -80,15 +87,15 @@ class HomeViewModel(
 
     companion object {
         private const val TAG = "HomeViewModel"
+        private const val BYTES_PER_MB = 1_000_000L
 
         val Factory = viewModelFactory {
             initializer {
-                val filesDir = checkNotNull(this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY]).filesDir
-                val pair = defaultLanguagePair()
+                val app = checkNotNull(this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY]) as ScanReadApp
                 HomeViewModel(
-                    languagePair = pair,
+                    languagePair = defaultLanguagePair(),
                     modelStore = MlKitModelStore(),
-                    isHighQualityModelInstalled = { OpusMtBundle.installed(filesDir, pair) != null },
+                    highQualityModels = app.highQualityModels,
                 )
             }
         }

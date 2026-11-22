@@ -35,7 +35,7 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for code-level details.
 ## Requirements
 
 - Android 8.0 (API 26) or newer
-- A one-time download of the language files (about 30 MB per language) from the home screen
+- A one-time download of the language files from the home screen: the high-quality model (about 225 MB, resumable, verified by checksum) or the basic ML Kit files (about 30 MB per language)
 - Permissions:
   - **Display over other apps** – floating button and translation overlay
   - **Screen capture** – requested by the system each time translation is started
