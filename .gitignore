@@ -41,3 +41,6 @@ last_analysis.txt
 tokenizer_samples.tsv
 *.jpg
 *.jpeg
+
+# Screenshots dropped into the project root (may show private settings)
+/*.png
