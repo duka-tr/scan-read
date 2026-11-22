@@ -32,7 +32,13 @@ class TranslationRenderer(
      * @property surface where and how to draw it.
      * @property originalLineHeight height of one original text line (px); the translation aims for it.
      */
-    class Item(val text: String, val surface: BlockSurface, val originalLineHeight: Float)
+    class Item(
+        val text: String,
+        val surface: BlockSurface,
+        val originalLineHeight: Float,
+        /** User preference multiplying the target text size. */
+        val textScale: Float = 1f,
+    )
 
     /** A prepared item; [fits] is `false` when the text did not fit its area at the minimum size. */
     class Prepared internal constructor(
@@ -89,7 +95,7 @@ class TranslationRenderer(
             minTextSize = minTextSize,
             locale = textLocale,
         )
-        val maxTextSize = item.originalLineHeight * CAP_HEIGHT_TARGET / capHeightRatio
+        val maxTextSize = item.originalLineHeight * CAP_HEIGHT_TARGET / capHeightRatio * item.textScale
         val fitted = fitter.fit(item.text, area.width, area.height, maxTextSize)
         val layout = fitted.layout
         // Centered on the area; an overflowing layout (wider or taller) extends evenly on both sides.

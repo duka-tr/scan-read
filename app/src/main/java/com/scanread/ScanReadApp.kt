@@ -2,7 +2,7 @@ package com.scanread
 
 import android.app.Application
 import com.scanread.core.notification.NotificationChannels
-import com.scanread.translate.mlkit.defaultLanguagePair
+import com.scanread.core.settings.SettingsRepository
 import com.scanread.translate.opusmt.HighQualityModels
 import com.scanread.translate.opusmt.OpusMtModelStore
 import kotlinx.coroutines.CoroutineScope
@@ -14,10 +14,11 @@ class ScanReadApp : Application() {
     /** Work that must outlive screens, such as model downloads. */
     private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
+    val settings: SettingsRepository by lazy { SettingsRepository(this) }
+
     val highQualityModels: HighQualityModels by lazy {
         HighQualityModels(
             store = OpusMtModelStore(filesDir, BuildConfig.MODEL_RELEASES_URL),
-            pair = defaultLanguagePair(),
             scope = appScope,
         )
     }

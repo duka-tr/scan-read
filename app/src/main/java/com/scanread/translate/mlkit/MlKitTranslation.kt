@@ -6,17 +6,23 @@ import com.google.mlkit.nl.translate.TranslateLanguage
 import com.google.mlkit.nl.translate.TranslateRemoteModel
 import com.google.mlkit.nl.translate.Translation
 import com.google.mlkit.nl.translate.TranslatorOptions
+import com.scanread.core.settings.AppSettings
 import com.scanread.core.tasks.await
 import com.scanread.translate.LanguagePair
 import com.scanread.translate.TranslationEngine
 import com.scanread.translate.TranslationModelStore
 import java.util.Locale
 
-/** Language pair used by the app: English into the device language. */
-fun defaultLanguagePair(locale: Locale = Locale.getDefault()): LanguagePair =
-    LanguagePair.forDevice(
+/** All languages ML Kit can translate (ISO 639-1 codes). */
+val translatableLanguages: Set<String> get() = TranslateLanguage.getAllLanguages().toSet()
+
+/** The language pair to use for [settings]: the user's choice, or English into the device language. */
+fun resolveLanguagePair(settings: AppSettings, locale: Locale = Locale.getDefault()): LanguagePair =
+    LanguagePair.resolve(
+        source = settings.sourceLanguage,
+        target = settings.targetLanguage,
         deviceLanguage = locale.toLanguageTag().substringBefore('-'),
-        supportedLanguages = TranslateLanguage.getAllLanguages().toSet(),
+        supportedLanguages = translatableLanguages,
     )
 
 /** [TranslationEngine] backed by ML Kit on-device translation. */

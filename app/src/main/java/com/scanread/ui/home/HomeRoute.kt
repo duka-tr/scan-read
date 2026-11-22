@@ -1,6 +1,5 @@
 package com.scanread.ui.home
 
-import android.Manifest
 import android.app.Activity
 import android.media.projection.MediaProjectionManager
 import android.widget.Toast
@@ -14,34 +13,35 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.scanread.R
 import com.scanread.core.locale.LanguageNames
 import com.scanread.core.permission.Permissions
 import com.scanread.service.ScreenTranslateService
+import com.scanread.translate.opusmt.HighQualityModels
+import com.scanread.ui.MainViewModel
+import com.scanread.ui.ModelState
 
-/** Wires the home screen to permissions, system dialogs, the translation service and model state. */
+/** Wires the home screen to permissions, the capture consent dialog and the translation service. */
 @Composable
-fun HomeRoute(viewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory)) {
+fun HomeRoute(
+    viewModel: MainViewModel,
+    onOpenLanguages: () -> Unit,
+    onOpenSettings: () -> Unit,
+    onOpenSupport: () -> Unit,
+) {
     val context = LocalContext.current
-
     var overlayGranted by remember { mutableStateOf(Permissions.canDrawOverlays(context)) }
-    var notificationsGranted by remember { mutableStateOf(Permissions.hasNotificationPermission(context)) }
     val isServiceRunning by ScreenTranslateService.isRunning.collectAsStateWithLifecycle()
-    val modelState by viewModel.modelState.collectAsStateWithLifecycle()
-    val highQuality by viewModel.highQuality.collectAsStateWithLifecycle()
+    val pair by viewModel.languagePair.collectAsStateWithLifecycle()
+    val basic by viewModel.basicModel.collectAsStateWithLifecycle()
+    val highQuality by viewModel.highQualityModel.collectAsStateWithLifecycle()
 
     // Permissions and installed models may change while the app is in the background.
     LifecycleResumeEffect(Unit) {
         overlayGranted = Permissions.canDrawOverlays(context)
-        notificationsGranted = Permissions.hasNotificationPermission(context)
-        viewModel.refreshModelState()
+        viewModel.refreshModels()
         onPauseOrDispose { }
     }
-
-    val notificationLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission(),
-    ) { granted -> notificationsGranted = granted }
 
     val captureConsentLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult(),
@@ -54,28 +54,36 @@ fun HomeRoute(viewModel: HomeViewModel = viewModel(factory = HomeViewModel.Facto
         }
     }
 
+    val modelSummary = when {
+        highQuality.status == HighQualityModels.Status.READY -> ModelSummary.HIGH_QUALITY_READY
+        basic == ModelState.READY -> ModelSummary.BASIC_READY
+        highQuality.status == HighQualityModels.Status.DOWNLOADING || basic == ModelState.DOWNLOADING ->
+            ModelSummary.DOWNLOADING
+        else -> ModelSummary.NEEDED
+    }
+
     HomeScreen(
         state = HomeUiState(
-            overlayGranted = overlayGranted,
-            showNotificationPermission = Permissions.isNotificationPermissionRequired,
-            notificationsGranted = notificationsGranted,
             isServiceRunning = isServiceRunning,
-            sourceLanguageName = LanguageNames.displayName(viewModel.languagePair.source),
-            targetLanguageName = LanguageNames.displayName(viewModel.languagePair.target),
-            modelState = modelState,
-            highQuality = highQuality,
-            highQualitySizeMb = viewModel.highQualitySizeMb,
+            overlayGranted = overlayGranted,
+            languages = context.getString(
+                R.string.translation_languages,
+                LanguageNames.displayName(pair.source),
+                LanguageNames.displayName(pair.target),
+            ),
+            modelSummary = modelSummary,
         ),
-        onGrantOverlay = { context.startActivity(Permissions.overlaySettingsIntent(context)) },
-        onGrantNotifications = { notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS) },
-        onDownloadModel = viewModel::downloadModel,
-        onDeleteModel = viewModel::deleteModel,
-        onDownloadHighQuality = viewModel::downloadHighQualityModel,
-        onDeleteHighQuality = viewModel::deleteHighQualityModel,
-        onStartService = {
-            val manager = context.getSystemService(MediaProjectionManager::class.java)
-            captureConsentLauncher.launch(manager.createScreenCaptureIntent())
+        onToggleService = {
+            if (isServiceRunning) {
+                ScreenTranslateService.stop(context)
+            } else {
+                val manager = context.getSystemService(MediaProjectionManager::class.java)
+                captureConsentLauncher.launch(manager.createScreenCaptureIntent())
+            }
         },
-        onStopService = { ScreenTranslateService.stop(context) },
+        onGrantOverlay = { context.startActivity(Permissions.overlaySettingsIntent(context)) },
+        onOpenLanguages = onOpenLanguages,
+        onOpenSettings = onOpenSettings,
+        onOpenSupport = onOpenSupport,
     )
 }

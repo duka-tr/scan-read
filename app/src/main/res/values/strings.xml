@@ -8,21 +8,15 @@
 
     <!-- Home screen -->
     <string name="home_subtitle">Translate text on your screen instantly, entirely on your device.</string>
-    <string name="home_section_permissions">Permissions</string>
-    <string name="home_section_service">Screen translation</string>
-    <string name="home_section_translation">Languages</string>
 
     <!-- Permissions -->
     <string name="permission_overlay_title">Display over other apps</string>
-    <string name="permission_overlay_description">Required to show the floating button and translations on top of other apps.</string>
     <string name="permission_notifications_title">Notifications</string>
-    <string name="permission_notifications_description">Recommended. Shows a notification with a quick stop action while screen translation is active.</string>
     <string name="permission_action_grant">Grant</string>
     <string name="permission_status_granted">Granted</string>
 
     <!-- Service control -->
     <string name="service_status_running">Running. Tap the floating button to translate the screen.</string>
-    <string name="service_status_stopped">Stopped</string>
     <string name="service_requires_overlay">Grant the overlay permission to start.</string>
     <string name="service_action_start">Start</string>
     <string name="service_action_stop">Stop</string>
@@ -60,4 +54,84 @@
     <string name="screen_changed_during_translation">The screen changed while translating. Tap the button again.</string>
     <string name="translation_failed">Translation failed. Please try again.</string>
     <string name="overlay_content_description">Translated text. Touch to dismiss.</string>
+
+    <!-- Navigation -->
+    <string name="nav_back">Back</string>
+    <string name="action_close">Close</string>
+
+    <!-- Home -->
+    <string name="home_status_stopped">Tap to start screen translation</string>
+    <string name="home_support">Support the developer</string>
+    <string name="home_model_high_quality_ready">High-quality translation ready</string>
+    <string name="home_model_basic_ready">Basic translation ready</string>
+    <string name="home_model_needed">Language files needed. Tap to download.</string>
+
+    <!-- Languages -->
+    <string name="languages_title">Languages</string>
+    <string name="languages_source">Read from</string>
+    <string name="languages_target">Translate into</string>
+    <string name="languages_models">Language files</string>
+    <string name="languages_source_hint">Languages written in the Latin alphabet can be read. Japanese, Korean and Chinese are planned.</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_section_button">Floating button</string>
+    <string name="settings_button_size">Size</string>
+    <string name="settings_size_small">Small</string>
+    <string name="settings_size_medium">Medium</string>
+    <string name="settings_size_large">Large</string>
+    <string name="settings_button_opacity">Opacity</string>
+    <string name="settings_section_translation">Translation</string>
+    <string name="settings_text_size">Text size</string>
+    <string name="settings_text_preview">SAMPLE TEXT</string>
+    <string name="settings_skip_sound_effects">Leave sound effects as they are</string>
+    <string name="settings_skip_sound_effects_summary">Drawn lettering such as BOOM or BLAM is not translated.</string>
+    <string name="settings_section_app">App</string>
+    <string name="settings_app_language">App language</string>
+    <string name="settings_percent">%1$d%%</string>
+
+    <!-- About -->
+    <string name="about_title">About</string>
+    <string name="about_version">Version %1$s</string>
+    <string name="about_privacy_title">Privacy</string>
+    <string name="about_privacy_text">Screen content is processed only on your device, and only when you tap the floating button. Nothing is collected, stored or sent anywhere. The internet is used only to download language files.</string>
+    <string name="about_source_code">Source code</string>
+    <string name="about_licenses">Open-source licenses</string>
+
+    <!-- Support -->
+    <string name="support_text">ScanRead is free, ad-free and open source. If it helps you, you can leave a tip. Tips do not unlock anything; they keep development going.</string>
+    <string name="support_unavailable">Tips are available when the app is installed from Google Play.</string>
+    <string name="support_tip_small">Small tip</string>
+    <string name="support_tip_medium">Medium tip</string>
+    <string name="support_tip_large">Large tip</string>
+    <string name="support_tip_button" translatable="false">%1$s · %2$s</string>
+    <string name="support_thanks">Thank you for your support!</string>
+    <string name="support_failed">The payment could not be completed.</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_welcome_title">Translate the text on your screen</string>
+    <string name="onboarding_welcome_point_overlay">Tap the floating button over any app; translations appear right where the text was.</string>
+    <string name="onboarding_welcome_point_private">Everything runs on your phone. Nothing you read leaves your device.</string>
+    <string name="onboarding_welcome_point_offline">After a one-time download, translation works offline.</string>
+    <string name="onboarding_overlay_text">Needed to show the floating button and the translations on top of the app you are reading in.</string>
+    <string name="onboarding_notifications_text">Optional. Shows a notification while translation is on, with a button to turn it off.</string>
+    <string name="onboarding_languages_title">Choose your languages</string>
+    <string name="onboarding_languages_hint">You can download the language files now or later from the Languages screen.</string>
+    <string name="onboarding_next">Next</string>
+    <string name="onboarding_skip">Skip</string>
+    <string name="onboarding_finish">Get started</string>
+
+    <!-- Names and licenses (not translated) -->
+    <string name="about_source_code_url" translatable="false">https://github.com/DursunKm/scan-read</string>
+    <string name="notice_opus_mt" translatable="false">Opus-MT translation models (University of Helsinki)</string>
+    <string name="notice_comic_relief" translatable="false">Comic Relief font</string>
+    <string name="notice_onnx_runtime" translatable="false">ONNX Runtime</string>
+    <string name="notice_ml_kit" translatable="false">Google ML Kit</string>
+    <string name="notice_androidx" translatable="false">AndroidX and Jetpack Compose</string>
+    <string name="notice_kotlin" translatable="false">Kotlin and kotlinx.coroutines</string>
+    <string name="license_cc_by_4" translatable="false">CC BY 4.0</string>
+    <string name="license_ofl" translatable="false">SIL Open Font License 1.1</string>
+    <string name="license_mit" translatable="false">MIT License</string>
+    <string name="license_ml_kit" translatable="false">ML Kit Terms of Service</string>
+    <string name="license_apache_2" translatable="false">Apache License 2.0</string>
 </resources>

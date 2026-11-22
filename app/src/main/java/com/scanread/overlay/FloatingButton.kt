@@ -23,11 +23,13 @@ class FloatingButton(
     private val onClick: () -> Unit,
 ) {
     private val windowManager = context.getSystemService(WindowManager::class.java)
-    private val sizePx = context.resources.getDimensionPixelSize(R.dimen.floating_button_size)
+    private var sizePx = context.resources.getDimensionPixelSize(R.dimen.floating_button_size)
+    private var opacity = 1f
+    private var busy = false
     private val touchSlop = ViewConfiguration.get(context).scaledTouchSlop
 
     private val view: ImageView = ImageView(context).apply {
-        val padding = resources.getDimensionPixelSize(R.dimen.floating_button_padding)
+        val padding = (sizePx * ICON_PADDING_SHARE).toInt()
         setPadding(padding, padding, padding, padding)
         setBackgroundResource(R.drawable.bg_floating_button)
         setImageResource(R.drawable.ic_translate)
@@ -67,13 +69,32 @@ class FloatingButton(
         view.visibility = if (hidden) View.INVISIBLE else View.VISIBLE
     }
 
-    /** Dims the button while a capture is being processed. */
     /** Where the button currently is on screen. */
     val screenBounds: Box
         get() = Box(layoutParams.x, layoutParams.y, layoutParams.x + sizePx, layoutParams.y + sizePx)
 
+    /** Dims the button while a capture is being processed. */
     fun setBusy(busy: Boolean) {
-        view.alpha = if (busy) BUSY_ALPHA else 1f
+        this.busy = busy
+        updateAlpha()
+    }
+
+    /** Applies the user's size (dp) and opacity (0..1) settings. */
+    fun setAppearance(sizeDp: Int, opacity: Float) {
+        this.opacity = opacity
+        updateAlpha()
+        val newSize = (sizeDp * context.resources.displayMetrics.density).toInt()
+        if (newSize == sizePx) return
+        sizePx = newSize
+        val padding = (newSize * ICON_PADDING_SHARE).toInt()
+        view.setPadding(padding, padding, padding, padding)
+        layoutParams.width = newSize
+        layoutParams.height = newSize
+        if (isAttached) snapToEdge()
+    }
+
+    private fun updateAlpha() {
+        view.alpha = opacity * if (busy) BUSY_ALPHA else 1f
     }
 
     private fun snapToEdge() {
@@ -122,5 +143,6 @@ class FloatingButton(
 
     private companion object {
         const val BUSY_ALPHA = 0.5f
+        const val ICON_PADDING_SHARE = 0.25f
     }
 }

@@ -2,21 +2,15 @@
 <resources>
     <!-- Home screen -->
     <string name="home_subtitle">Ekrandaki metinleri anında, tamamen cihazınızda çevirin.</string>
-    <string name="home_section_permissions">İzinler</string>
-    <string name="home_section_service">Ekran çevirisi</string>
-    <string name="home_section_translation">Diller</string>
 
     <!-- Permissions -->
     <string name="permission_overlay_title">Diğer uygulamaların üzerinde göster</string>
-    <string name="permission_overlay_description">Yüzen butonun ve çevirilerin diğer uygulamaların üzerinde gösterilmesi için gereklidir.</string>
     <string name="permission_notifications_title">Bildirimler</string>
-    <string name="permission_notifications_description">Önerilir. Ekran çevirisi açıkken hızlı durdurma seçeneği olan bir bildirim gösterir.</string>
     <string name="permission_action_grant">İzin ver</string>
     <string name="permission_status_granted">İzin verildi</string>
 
     <!-- Service control -->
     <string name="service_status_running">Çalışıyor. Ekranı çevirmek için yüzen butona dokunun.</string>
-    <string name="service_status_stopped">Durduruldu</string>
     <string name="service_requires_overlay">Başlatmak için üzerinde gösterme iznini verin.</string>
     <string name="service_action_start">Başlat</string>
     <string name="service_action_stop">Durdur</string>
@@ -53,4 +47,69 @@
     <string name="screen_changed_during_translation">Çeviri sırasında ekran değişti. Butona tekrar dokunun.</string>
     <string name="translation_failed">Çeviri başarısız oldu. Lütfen tekrar deneyin.</string>
     <string name="overlay_content_description">Çevrilmiş metin. Kapatmak için dokunun.</string>
+
+    <!-- Navigation -->
+    <string name="nav_back">Geri</string>
+    <string name="action_close">Kapat</string>
+
+    <!-- Home -->
+    <string name="home_status_stopped">Ekran çevirisini başlatmak için dokunun</string>
+    <string name="home_support">Geliştiriciyi destekle</string>
+    <string name="home_model_high_quality_ready">Yüksek kaliteli çeviri hazır</string>
+    <string name="home_model_basic_ready">Temel çeviri hazır</string>
+    <string name="home_model_needed">Dil dosyaları gerekli. İndirmek için dokunun.</string>
+
+    <!-- Languages -->
+    <string name="languages_title">Diller</string>
+    <string name="languages_source">Kaynak dil</string>
+    <string name="languages_target">Hedef dil</string>
+    <string name="languages_models">Dil dosyaları</string>
+    <string name="languages_source_hint">Latin alfabesiyle yazılan diller okunabilir. Japonca, Korece ve Çince ileride eklenecek.</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Ayarlar</string>
+    <string name="settings_section_button">Yüzen buton</string>
+    <string name="settings_button_size">Boyut</string>
+    <string name="settings_size_small">Küçük</string>
+    <string name="settings_size_medium">Orta</string>
+    <string name="settings_size_large">Büyük</string>
+    <string name="settings_button_opacity">Opaklık</string>
+    <string name="settings_section_translation">Çeviri</string>
+    <string name="settings_text_size">Yazı boyutu</string>
+    <string name="settings_text_preview">ÖRNEK METİN</string>
+    <string name="settings_skip_sound_effects">Ses efektlerini olduğu gibi bırak</string>
+    <string name="settings_skip_sound_effects_summary">BOOM, BLAM gibi çizilmiş efekt yazıları çevrilmez.</string>
+    <string name="settings_section_app">Uygulama</string>
+    <string name="settings_app_language">Uygulama dili</string>
+    <string name="settings_percent">%%%1$d</string>
+
+    <!-- About -->
+    <string name="about_title">Hakkında</string>
+    <string name="about_version">Sürüm %1$s</string>
+    <string name="about_privacy_title">Gizlilik</string>
+    <string name="about_privacy_text">Ekran içeriği yalnızca yüzen butona dokunduğunuzda ve yalnızca cihazınızda işlenir. Hiçbir şey toplanmaz, saklanmaz ya da bir yere gönderilmez. İnternet yalnızca dil dosyalarını indirmek için kullanılır.</string>
+    <string name="about_source_code">Kaynak kodu</string>
+    <string name="about_licenses">Açık kaynak lisansları</string>
+
+    <!-- Support -->
+    <string name="support_text">ScanRead ücretsiz, reklamsız ve açık kaynaklıdır. İşinize yarıyorsa bahşiş bırakabilirsiniz. Bahşiş hiçbir özelliğin kilidini açmaz; geliştirmenin sürmesine destek olur.</string>
+    <string name="support_unavailable">Bahşiş seçenekleri, uygulama Google Play üzerinden yüklendiğinde kullanılabilir.</string>
+    <string name="support_tip_small">Küçük bahşiş</string>
+    <string name="support_tip_medium">Orta bahşiş</string>
+    <string name="support_tip_large">Büyük bahşiş</string>
+    <string name="support_thanks">Desteğiniz için teşekkürler!</string>
+    <string name="support_failed">Ödeme tamamlanamadı.</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_welcome_title">Ekrandaki metni anında çevirin</string>
+    <string name="onboarding_welcome_point_overlay">Herhangi bir uygulamanın üstündeki yüzen butona dokunun; çeviriler metnin bulunduğu yerde görünür.</string>
+    <string name="onboarding_welcome_point_private">Her şey telefonunuzda çalışır. Okuduklarınız cihazınızdan çıkmaz.</string>
+    <string name="onboarding_welcome_point_offline">Bir kez indirdikten sonra çeviri internetsiz çalışır.</string>
+    <string name="onboarding_overlay_text">Yüzen butonun ve çevirilerin, okuduğunuz uygulamanın üstünde gösterilmesi için gereklidir.</string>
+    <string name="onboarding_notifications_text">İsteğe bağlı. Çeviri açıkken, kapatma düğmesi olan bir bildirim gösterir.</string>
+    <string name="onboarding_languages_title">Dillerinizi seçin</string>
+    <string name="onboarding_languages_hint">Dil dosyalarını şimdi ya da daha sonra Diller ekranından indirebilirsiniz.</string>
+    <string name="onboarding_next">İleri</string>
+    <string name="onboarding_skip">Atla</string>
+    <string name="onboarding_finish">Başla</string>
 </resources>

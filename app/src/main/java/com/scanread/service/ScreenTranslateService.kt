@@ -23,6 +23,8 @@ import androidx.core.content.IntentCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import com.scanread.BuildConfig
+import com.scanread.ScanReadApp
+import com.scanread.core.settings.AppSettings
 import com.scanread.R
 import com.scanread.capture.ScreenCapturer
 import com.scanread.capture.ScreenChangeDetector
@@ -48,7 +50,7 @@ import com.scanread.translate.TranslationEngine
 import com.scanread.translate.TranslationBackends
 import com.scanread.translate.TranslationModelStore
 import com.scanread.translate.mlkit.MlKitModelStore
-import com.scanread.translate.mlkit.defaultLanguagePair
+import com.scanread.translate.mlkit.resolveLanguagePair
 import com.scanread.ui.MainActivity
 import java.util.Locale
 import kotlinx.coroutines.CancellationException
@@ -78,7 +80,9 @@ class ScreenTranslateService : LifecycleService() {
     private var captureJob: Job? = null
     private var changeWatchJob: Job? = null
 
-    private val languagePair: LanguagePair by lazy { defaultLanguagePair() }
+    private val settingsRepository by lazy { (application as ScanReadApp).settings }
+    private var settings = AppSettings()
+    private var languagePair: LanguagePair = resolveLanguagePair(settings)
     private val modelStore: TranslationModelStore = MlKitModelStore()
     private val soundEffectFilter = SoundEffectFilter()
     private var backend = TranslationBackends.Backend.ML_KIT
@@ -128,6 +132,38 @@ class ScreenTranslateService : LifecycleService() {
 
         capturer = ScreenCapturer(this, mediaProjection).also { it.start() }
         analyzer = ScreenTextAnalyzer(MlKitOcrEngine())
+        floatingButton = FloatingButton(this, onClick = ::onFloatingButtonClicked).also { it.show() }
+        _isRunning.value = true
+
+        // Settings may change while running (language pair, button appearance, text size).
+        lifecycleScope.launch {
+            settingsRepository.settings.collect(::applySettings)
+        }
+    }
+
+    private fun applySettings(newSettings: AppSettings) {
+        settings = newSettings
+        floatingButton?.setAppearance(newSettings.buttonSize.dp, newSettings.buttonOpacity)
+        val pair = resolveLanguagePair(newSettings)
+        if (pair != languagePair || translationEngine == null) {
+            languagePair = pair
+            setUpTranslation()
+            // Refresh the notification's language pair.
+            ServiceCompat.startForeground(
+                this,
+                NOTIFICATION_ID,
+                buildNotification(),
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION,
+            )
+        }
+    }
+
+    /** (Re)creates the translation engine and overlay for [languagePair]. */
+    private fun setUpTranslation() {
+        dismissOverlay()
+        translationEngine?.close()
+        isModelReady = false
+
         val (selectedBackend, baseEngine) = TranslationBackends.createEngine(this, languagePair)
         backend = selectedBackend
         val engine = CachingTranslationEngine(baseEngine)
@@ -141,16 +177,15 @@ class ScreenTranslateService : LifecycleService() {
                     WordSegmenter(contractions + bundle.loadWordScores())
                 }
             }
-        blockTranslator = BlockTranslator(engine, Locale.forLanguageTag(languagePair.target)) { text ->
+        val targetLocale = Locale.forLanguageTag(languagePair.target)
+        blockTranslator = BlockTranslator(engine, targetLocale) { text ->
             segmenter?.value?.segment(text)?.let(TextNormalizer::repairContractions) ?: text
         }
         translationOverlay = TranslationOverlay(
             context = this,
-            textLocale = Locale.forLanguageTag(languagePair.target),
+            textLocale = targetLocale,
             onDismissRequest = ::dismissOverlay,
         )
-        floatingButton = FloatingButton(this, onClick = ::onFloatingButtonClicked).also { it.show() }
-        _isRunning.value = true
     }
 
     private fun onFloatingButtonClicked() {
@@ -219,11 +254,15 @@ class ScreenTranslateService : LifecycleService() {
                         .write(bitmap, ignoredAreas, analysis, translated, elapsedMs)
                 }
             }
-            val soundEffects = soundEffectFilter.detect(
-                blocks = analysis.blocks,
-                translations = translated.map { it.translation },
-                inBalloon = analysis.surfaces.map { it.isShaped },
-            )
+            val soundEffects = if (settings.skipSoundEffects) {
+                soundEffectFilter.detect(
+                    blocks = analysis.blocks,
+                    translations = translated.map { it.translation },
+                    inBalloon = analysis.surfaces.map { it.isShaped },
+                )
+            } else {
+                List(analysis.blocks.size) { false }
+            }
             // Translating takes a moment; if the user scrolled or switched apps meanwhile, the result
             // would land on the wrong content.
             if (screenChanged(changeDetector, baseline, ignoredAreas + button.screenBounds)) {
@@ -237,6 +276,7 @@ class ScreenTranslateService : LifecycleService() {
                         text = block.displayText,
                         surface = analysis.surfaces[index],
                         originalLineHeight = block.block.box.height.toFloat() / block.block.lines.size,
+                        textScale = settings.textScale,
                     )
                 },
             ) ?: return
