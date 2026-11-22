@@ -86,6 +86,15 @@ fun AboutScreen(onBack: () -> Unit) {
 
             HorizontalDivider(modifier = Modifier.padding(top = 16.dp))
             ListItem(
+                headlineContent = { Text(stringResource(R.string.about_contact)) },
+                supportingContent = { Text(stringResource(R.string.support_email)) },
+                modifier = Modifier.clickable {
+                    val email = context.getString(R.string.support_email)
+                    val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:$email"))
+                    runCatching { context.startActivity(intent) }
+                },
+            )
+            ListItem(
                 headlineContent = { Text(stringResource(R.string.about_source_code)) },
                 supportingContent = { Text(stringResource(R.string.about_source_code_url)) },
                 modifier = Modifier.clickable { openUrl(context.getString(R.string.about_source_code_url)) },

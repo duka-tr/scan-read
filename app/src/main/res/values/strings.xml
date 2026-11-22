@@ -95,6 +95,7 @@
     <string name="about_version">Version %1$s</string>
     <string name="about_privacy_title">Privacy</string>
     <string name="about_privacy_text">Screen content is processed only on your device, and only when you tap the floating button. Nothing is collected, stored or sent anywhere. The internet is used only to download language files.</string>
+    <string name="about_contact">Contact</string>
     <string name="about_source_code">Source code</string>
     <string name="about_licenses">Open-source licenses</string>
 
@@ -122,6 +123,7 @@
     <string name="onboarding_finish">Get started</string>
 
     <!-- Names and licenses (not translated) -->
+    <string name="support_email" translatable="false">support@duka.tr</string>
     <string name="about_source_code_url" translatable="false">https://github.com/DursunKm/scan-read</string>
     <string name="notice_opus_mt" translatable="false">Opus-MT translation models (University of Helsinki)</string>
     <string name="notice_comic_relief" translatable="false">Comic Relief font</string>

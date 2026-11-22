@@ -21,6 +21,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.text.Collator
+import java.util.Locale
 
 /** State of the basic (ML Kit) language files for the selected pair. */
 enum class ModelState { CHECKING, MISSING, DOWNLOADING, READY, ERROR }
@@ -49,11 +51,14 @@ class MainViewModel(
 
     val highQualityModel: StateFlow<HighQualityModels.State> = highQualityModels.state
 
+    /** Alphabetical order of the user's language (e.g. Turkish "Ç" right after "C"). */
+    private val nameOrder = compareBy<LanguageOption, String>(Collator.getInstance(Locale.getDefault())) { it.name }
+
     val sourceLanguages: List<LanguageOption> =
-        LanguagePair.SOURCE_LANGUAGES.filter { it in translatableLanguages }.map(::option).sortedBy { it.name }
+        LanguagePair.SOURCE_LANGUAGES.filter { it in translatableLanguages }.map(::option).sortedWith(nameOrder)
 
     val targetLanguages: List<LanguageOption> =
-        translatableLanguages.map(::option).sortedBy { it.name }
+        translatableLanguages.map(::option).sortedWith(nameOrder)
 
     init {
         viewModelScope.launch {

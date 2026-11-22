@@ -88,6 +88,7 @@
     <string name="about_version">Sürüm %1$s</string>
     <string name="about_privacy_title">Gizlilik</string>
     <string name="about_privacy_text">Ekran içeriği yalnızca yüzen butona dokunduğunuzda ve yalnızca cihazınızda işlenir. Hiçbir şey toplanmaz, saklanmaz ya da bir yere gönderilmez. İnternet yalnızca dil dosyalarını indirmek için kullanılır.</string>
+    <string name="about_contact">İletişim</string>
     <string name="about_source_code">Kaynak kodu</string>
     <string name="about_licenses">Açık kaynak lisansları</string>
 
