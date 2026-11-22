@@ -124,7 +124,7 @@
 
     <!-- Names and licenses (not translated) -->
     <string name="support_email" translatable="false">support@duka.tr</string>
-    <string name="about_source_code_url" translatable="false">https://github.com/DursunKm/scan-read</string>
+    <string name="about_source_code_url" translatable="false">https://github.com/duka-tr/scan-read</string>
     <string name="notice_opus_mt" translatable="false">Opus-MT translation models (University of Helsinki)</string>
     <string name="notice_comic_relief" translatable="false">Comic Relief font</string>
     <string name="notice_onnx_runtime" translatable="false">ONNX Runtime</string>

@@ -19,7 +19,7 @@ Everything runs locally on the device: no accounts, no ads, no paid APIs, and no
 
 ## Install
 
-Download the latest APK from [Releases](https://github.com/DursunKm/scan-read/releases/latest) and open it on your phone (allow installing from your browser or file manager when asked). The first-run guide walks you through the permissions and the language files.
+Download the latest APK from [Releases](https://github.com/duka-tr/scan-read/releases/latest) and open it on your phone (allow installing from your browser or file manager when asked). The first-run guide walks you through the permissions and the language files.
 
 ## How it works
 
@@ -138,7 +138,7 @@ ScanRead processes screen contents only when you tap the floating button, entire
 
 ## Support and contact
 
-- Report problems and ideas in [Issues](https://github.com/DursunKm/scan-read/issues).
+- Report problems and ideas in [Issues](https://github.com/duka-tr/scan-read/issues).
 - Contact: [support@duka.tr](mailto:support@duka.tr)
 - Starring the repository helps others find the project.
 

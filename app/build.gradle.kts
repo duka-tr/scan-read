@@ -27,7 +27,7 @@ android {
         // Where downloadable translation models are published (GitHub release assets). Forks and
         // local testing can override it: -Pscanread.modelReleasesUrl=http://localhost:8000
         val modelReleasesUrl = providers.gradleProperty("scanread.modelReleasesUrl")
-            .getOrElse("https://github.com/DursunKm/scan-read/releases/download")
+            .getOrElse("https://github.com/duka-tr/scan-read/releases/download")
         buildConfigField("String", "MODEL_RELEASES_URL", "\"$modelReleasesUrl\"")
 
         // In-app tips through Google Play Billing. Off by default: selling through the store makes
