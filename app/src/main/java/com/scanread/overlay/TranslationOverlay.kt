@@ -1,5 +1,6 @@
 package com.scanread.overlay
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.PixelFormat
@@ -9,6 +10,7 @@ import android.view.View
 import android.view.WindowManager
 import androidx.core.graphics.withTranslation
 import com.scanread.R
+import java.util.Locale
 
 /**
  * Full-screen overlay that covers the original text and draws translations in its place.
@@ -16,11 +18,13 @@ import com.scanread.R
  */
 class TranslationOverlay(
     private val context: Context,
+    /** Language of the translations; used for hyphenation. */
+    textLocale: Locale,
     private val onDismissRequest: () -> Unit,
 ) {
     private val windowManager = context.getSystemService(WindowManager::class.java)
 
-    private val view = TranslationView(context).apply {
+    private val view = TranslationView(context, textLocale).apply {
         contentDescription = context.getString(R.string.overlay_content_description)
         setOnClickListener { onDismissRequest() }
     }
@@ -62,9 +66,11 @@ class TranslationOverlay(
     }
 }
 
-private class TranslationView(context: Context) : View(context) {
+// Only created in code, never inflated from XML, so the standard view constructors are not needed.
+@SuppressLint("ViewConstructor")
+private class TranslationView(context: Context, textLocale: Locale) : View(context) {
 
-    private val renderer = TranslationRenderer(context)
+    private val renderer = TranslationRenderer(context, textLocale)
     private val screenLocation = IntArray(2)
     private var prepared: List<TranslationRenderer.Prepared> = emptyList()
 

@@ -139,7 +139,11 @@ class ScreenTranslateService : LifecycleService() {
         blockTranslator = BlockTranslator(engine, Locale.forLanguageTag(languagePair.target)) { text ->
             segmenter?.value?.segment(text)?.let(TextNormalizer::repairContractions) ?: text
         }
-        translationOverlay = TranslationOverlay(this, onDismissRequest = ::dismissOverlay)
+        translationOverlay = TranslationOverlay(
+            context = this,
+            textLocale = Locale.forLanguageTag(languagePair.target),
+            onDismissRequest = ::dismissOverlay,
+        )
         floatingButton = FloatingButton(this, onClick = ::onFloatingButtonClicked).also { it.show() }
         _isRunning.value = true
     }

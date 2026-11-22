@@ -10,12 +10,17 @@ import android.text.TextPaint
 import androidx.core.graphics.withTranslation
 import com.scanread.R
 import com.scanread.render.BlockSurface
+import java.util.Locale
 
 /**
  * Draws covers and translations in screen coordinates. Used by the on-screen overlay and by
  * tests that render results into image files.
  */
-class TranslationRenderer(context: Context) {
+class TranslationRenderer(
+    context: Context,
+    /** Language of the drawn translations; used for hyphenation. */
+    private val textLocale: Locale = Locale.getDefault(),
+) {
 
     /**
      * @property text what to draw.
@@ -52,6 +57,7 @@ class TranslationRenderer(context: Context) {
         val fitter = TextFitter(
             basePaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply { color = surface.textColor },
             minTextSize = minTextSize,
+            locale = textLocale,
         )
         val fitted = fitter.fit(item.text, area.width, area.height, item.originalLineHeight * ORIGINAL_SIZE_RATIO)
         val layout = fitted.layout
