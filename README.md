@@ -1,4 +1,6 @@
-# ScanRead
+<p align="center"><img src="docs/images/logo.svg" width="128" height="128" alt="ScanRead logo"></p>
+
+<h1 align="center">ScanRead</h1>
 
 **On-device screen translator for Android.** ScanRead reads the text shown on your screen, translates it, and draws the translation back over the original — right where it was, in a matching style — so the page reads as if it had been written in your language.
 
@@ -107,6 +109,7 @@ app/src/main/
 
 app/src/test/                   JVM unit tests
 tools/opus-mt/                  Scripts that build and publish the on-device Opus-MT model bundles
+docs/images/                    Logo (SVG master) and store / social images
 ```
 
 ## Localization
