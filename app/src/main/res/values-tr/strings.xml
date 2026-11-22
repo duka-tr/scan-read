@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Home screen -->
+    <string name="home_subtitle">Ekrandaki metinleri anında, tamamen cihazınızda çevirin.</string>
+    <string name="home_section_permissions">İzinler</string>
+    <string name="home_section_service">Ekran çevirisi</string>
+    <string name="home_section_translation">Diller</string>
+
+    <!-- Permissions -->
+    <string name="permission_overlay_title">Diğer uygulamaların üzerinde göster</string>
+    <string name="permission_overlay_description">Yüzen butonun ve çevirilerin diğer uygulamaların üzerinde gösterilmesi için gereklidir.</string>
+    <string name="permission_notifications_title">Bildirimler</string>
+    <string name="permission_notifications_description">Önerilir. Ekran çevirisi açıkken hızlı durdurma seçeneği olan bir bildirim gösterir.</string>
+    <string name="permission_action_grant">İzin ver</string>
+    <string name="permission_status_granted">İzin verildi</string>
+
+    <!-- Service control -->
+    <string name="service_status_running">Çalışıyor. Ekranı çevirmek için yüzen butona dokunun.</string>
+    <string name="service_status_stopped">Durduruldu</string>
+    <string name="service_requires_overlay">Başlatmak için üzerinde gösterme iznini verin.</string>
+    <string name="service_action_start">Başlat</string>
+    <string name="service_action_stop">Durdur</string>
+    <string name="error_capture_permission_denied">Ekran yakalama izni verilmedi.</string>
+
+    <!-- Notification -->
+    <string name="notification_channel_name">Ekran çevirisi</string>
+    <string name="notification_channel_description">Ekran çevirisi açıkken gösterilir.</string>
+    <string name="notification_title">Ekran çevirisi açık</string>
+    <string name="notification_text">Ekranı çevirmek için yüzen butona dokunun.</string>
+    <string name="notification_action_stop">Durdur</string>
+
+    <!-- Floating button and capture -->
+    <string name="floating_button_content_description">Ekranı çevir</string>
+    <string name="capture_failed">Ekran yakalanamadı. Lütfen tekrar deneyin.</string>
+
+    <!-- Text recognition -->
+    <string name="ocr_no_text_found">Ekranda metin bulunamadı.</string>
+    <string name="ocr_failed">Metin tanıma başarısız oldu. Lütfen tekrar deneyin.</string>
+
+    <!-- Translation -->
+    <string name="translation_engine_high_quality">Hazır. Yüksek kaliteli internetsiz çeviri (Opus-MT).</string>
+    <string name="translation_model_checking">Dil dosyaları kontrol ediliyor…</string>
+    <string name="translation_model_missing">Dil dosyalarının bir kez indirilmesi gerekiyor (yaklaşık 30 MB). Sonrasında çeviri internetsiz çalışır.</string>
+    <string name="translation_model_downloading">Dil dosyaları indiriliyor…</string>
+    <string name="translation_model_ready">Hazır. Çeviri internetsiz çalışır.</string>
+    <string name="translation_model_error">İndirme başarısız oldu. Bağlantınızı kontrol edip tekrar deneyin.</string>
+    <string name="translation_action_download">İndir</string>
+    <string name="translation_action_delete">Sil</string>
+    <string name="translation_model_required">Önce uygulamadan dil dosyalarını indirin.</string>
+    <string name="translation_failed">Çeviri başarısız oldu. Lütfen tekrar deneyin.</string>
+    <string name="overlay_content_description">Çevrilmiş metin. Kapatmak için dokunun.</string>
+</resources>

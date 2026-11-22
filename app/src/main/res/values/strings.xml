@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Default (English) strings. Every user-facing text must be defined here.
+    To add a language, copy this file to values-<lang>/strings.xml and translate the values.
+-->
+<resources>
+    <string name="app_name" translatable="false">ScanRead</string>
+
+    <!-- Home screen -->
+    <string name="home_subtitle">Translate text on your screen instantly, entirely on your device.</string>
+    <string name="home_section_permissions">Permissions</string>
+    <string name="home_section_service">Screen translation</string>
+    <string name="home_section_translation">Languages</string>
+
+    <!-- Permissions -->
+    <string name="permission_overlay_title">Display over other apps</string>
+    <string name="permission_overlay_description">Required to show the floating button and translations on top of other apps.</string>
+    <string name="permission_notifications_title">Notifications</string>
+    <string name="permission_notifications_description">Recommended. Shows a notification with a quick stop action while screen translation is active.</string>
+    <string name="permission_action_grant">Grant</string>
+    <string name="permission_status_granted">Granted</string>
+
+    <!-- Service control -->
+    <string name="service_status_running">Running. Tap the floating button to translate the screen.</string>
+    <string name="service_status_stopped">Stopped</string>
+    <string name="service_requires_overlay">Grant the overlay permission to start.</string>
+    <string name="service_action_start">Start</string>
+    <string name="service_action_stop">Stop</string>
+    <string name="error_capture_permission_denied">Screen capture permission was not granted.</string>
+
+    <!-- Notification -->
+    <string name="notification_channel_name">Screen translation</string>
+    <string name="notification_channel_description">Shown while screen translation is active.</string>
+    <string name="notification_title">Screen translation is active</string>
+    <string name="notification_text">Tap the floating button to translate the screen.</string>
+    <string name="notification_action_stop">Stop</string>
+
+    <!-- Floating button and capture -->
+    <string name="floating_button_content_description">Translate screen</string>
+    <string name="capture_failed">Could not capture the screen. Please try again.</string>
+
+    <!-- Text recognition -->
+    <string name="ocr_no_text_found">No text found on the screen.</string>
+    <string name="ocr_failed">Text recognition failed. Please try again.</string>
+
+    <!-- Translation -->
+    <string name="translation_languages" translatable="false">%1$s → %2$s</string>
+    <string name="translation_engine_high_quality">Ready. High-quality offline translation (Opus-MT).</string>
+    <string name="translation_model_checking">Checking language files…</string>
+    <string name="translation_model_missing">Language files are needed once (about 30 MB). After that, translation works offline.</string>
+    <string name="translation_model_downloading">Downloading language files…</string>
+    <string name="translation_model_ready">Ready. Translation works offline.</string>
+    <string name="translation_model_error">Download failed. Check your connection and try again.</string>
+    <string name="translation_action_download">Download</string>
+    <string name="translation_action_delete">Delete</string>
+    <string name="translation_model_required">Download the language files in the app first.</string>
+    <string name="translation_failed">Translation failed. Please try again.</string>
+    <string name="overlay_content_description">Translated text. Tap to dismiss.</string>
+</resources>

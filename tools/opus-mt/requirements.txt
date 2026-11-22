@@ -1,0 +1,5 @@
+onnx==1.23.2
+onnx_ir
+onnxruntime==1.32.0
+sentencepiece
+numpy

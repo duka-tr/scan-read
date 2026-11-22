@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="floating_button_size">52dp</dimen>
+    <dimen name="floating_button_padding">13dp</dimen>
+    <dimen name="translation_corner_radius">6dp</dimen>
+    <dimen name="translation_min_text_size">7sp</dimen>
+</resources>

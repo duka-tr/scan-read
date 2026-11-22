@@ -1,0 +1,43 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+.kotlin/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Local configuration (SDK path, signing secrets)
+local.properties
+keystore.properties
+*.jks
+*.keystore
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Model tooling outputs and Python environments
+tools/**/build/
+.venv/
+__pycache__/
+
+# Local test material (screenshots, captures, debug dumps, bench output) — may contain
+# third-party content and must never be committed.
+Screenshot_*
+/test-material/
+capture_*.png
+analysis_*.txt
+replay_*.txt
+last_capture.png
+last_analysis.txt
+tokenizer_samples.tsv
+*.jpg
+*.jpeg
