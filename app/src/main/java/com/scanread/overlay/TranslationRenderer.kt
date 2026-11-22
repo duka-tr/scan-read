@@ -5,6 +5,8 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.RectF
+import android.graphics.Typeface
+import androidx.core.content.res.ResourcesCompat
 import android.text.StaticLayout
 import android.text.TextPaint
 import androidx.core.graphics.withTranslation
@@ -44,6 +46,8 @@ class TranslationRenderer(
         }
     }
 
+    /** Comic-style lettering; narrow, so longer translations still fit balloons at a readable size. */
+    private val typeface: Typeface? = ResourcesCompat.getFont(context, R.font.patrick_hand)
     private val cornerRadius = context.resources.getDimension(R.dimen.translation_corner_radius)
     private val minTextSize = context.resources.getDimension(R.dimen.translation_min_text_size)
     private val coverPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
@@ -55,7 +59,10 @@ class TranslationRenderer(
         val area = surface.textArea
 
         val fitter = TextFitter(
-            basePaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply { color = surface.textColor },
+            basePaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+                color = surface.textColor
+                typeface = this@TranslationRenderer.typeface
+            },
             minTextSize = minTextSize,
             locale = textLocale,
         )

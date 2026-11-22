@@ -26,9 +26,9 @@ Everything runs locally on the device: no accounts, no paid APIs, and no interne
 
 1. **Capture** – the screen is mirrored through Android's `MediaProjection` API inside a foreground service. The app's own overlay is hidden for the moment of capture.
 2. **Recognize** – on-device OCR returns text lines along with their positions.
-3. **Group** – enclosed areas such as speech balloons are detected in the image; lines are split and merged so that each block holds the text of one area, then normalized for translation (casing, hyphenated line breaks).
+3. **Group** – enclosed areas such as speech balloons are detected in the image; lines are split and merged so that each block holds the text of one area (side-by-side balloons are separated by their word layout), then normalized for translation (casing, hyphenated line breaks, glued words, dropped apostrophes).
 4. **Translate** – each block is translated with an on-device model.
-5. **Render** – the original text is covered using the surrounding background, and the translation is drawn into the same area on a transparent overlay.
+5. **Render** – the original text is covered using the surrounding background, and the translation is drawn into the same area on a transparent overlay in a comic-style font, hyphenated by the target language's rules when space is tight. Sound effects are left untouched.
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for code-level details.
 
@@ -122,6 +122,10 @@ ScanRead processes screen contents only when you tap the floating button, entire
 ## License
 
 To be decided.
+
+### Third-party fonts
+
+- [Patrick Hand](https://fonts.google.com/specimen/Patrick+Hand) © Patrick Wagesreiter — [SIL Open Font License 1.1](app/src/main/assets/licenses/PatrickHand-OFL.txt). Used for rendered translations.
 
 ### Third-party models
 
