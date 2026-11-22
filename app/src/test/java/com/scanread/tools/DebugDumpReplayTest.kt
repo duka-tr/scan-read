@@ -43,6 +43,10 @@ class DebugDumpReplayTest {
 
         val blocks = TextBlockBuilder().build(lines, ignoredAreas, regions)
         val surfaces = BlockSurfacePlanner(regions, pixels, width, height).plan(blocks)
+        // Comparison without glyph absorption, to isolate its effect.
+        val withoutGlyphs = BlockSurfacePlanner(
+            regions, pixels, width, height, BlockSurfacePlanner.Config(maxGlyphHeightRatio = 0f),
+        ).plan(blocks)
 
         output.writeText(
             buildString {
@@ -52,7 +56,7 @@ class DebugDumpReplayTest {
                     val surface = surfaces[index]
                     val kind = if (surface.isShaped) "BALLOON" else "box"
                     appendLine("#$index ${block.box} lineRegions=$lineRegions")
-                    appendLine("    $kind text=${surface.textArea.width}x${surface.textArea.height} (orig ${block.box.width}x${block.box.height}) fill=${Integer.toHexString(surface.fillColor)}")
+                    appendLine("    $kind text=${surface.textArea.width}x${surface.textArea.height} (orig ${block.box.width}x${block.box.height}) fill=${Integer.toHexString(surface.fillColor)} cover=${surface.fillBounds} noGlyphCover=${withoutGlyphs[index].fillBounds}")
                     regions.regionOf(block.box)?.takeIf { it.isEnclosed }?.let { region ->
                         val shape = regions.shapeOf(region.id)
                         val bounds = shape.bounds

@@ -68,6 +68,36 @@ class BlockSurfacePlannerTest {
         assertEquals(BlockSurfacePlanner.WHITE, surface.textColor)
     }
 
+    @Test
+    fun `unrecognized letters right above a block are covered too`() {
+        val pixels = image().apply {
+            // A short stylized word OCR missed, on the line right above the recognized one.
+            for (y in 135 until 155) for (x in 150 until 156) this[y * width + x] = BLACK
+            for (y in 135 until 155) for (x in 162 until 172) this[y * width + x] = BLACK
+            // The recognized line itself.
+            for (y in 160 until 180) for (x in 130 until 210) this[y * width + x] = BLACK
+        }
+        val textBlock = block(Box(130, 160, 210, 180))
+
+        val surface = planner(pixels).plan(listOf(textBlock)).single()
+
+        assertTrue("cover reaches the missed word", surface.fillBounds.top <= 135)
+    }
+
+    @Test
+    fun `artwork touching the search window is not absorbed`() {
+        val pixels = image().apply {
+            // A long vertical line (e.g. a panel border) left of the text.
+            for (y in 0 until height) for (x in 118 until 121) this[y * width + x] = BLACK
+            for (y in 160 until 180) for (x in 130 until 210) this[y * width + x] = BLACK
+        }
+        val textBlock = block(Box(130, 160, 210, 180))
+
+        val surface = planner(pixels).plan(listOf(textBlock)).single()
+
+        assertTrue("cover stays right of the border", surface.fillBounds.left >= 121)
+    }
+
     private companion object {
         const val WHITE = 0xFFFFFFFF.toInt()
         const val BLACK = 0xFF000000.toInt()

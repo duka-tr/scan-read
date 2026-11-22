@@ -42,6 +42,14 @@ class BlockSurfacePlanner(
          */
         val boxGrowthWidth: Float = 1.8f,
         val boxGrowthHeight: Float = 1.4f,
+        /** Search window around a block for unrecognized glyphs, in line heights. */
+        val glyphSearchHorizontal: Float = 0.5f,
+        val glyphSearchVertical: Float = 2f,
+        /** Letter-sized components are this tall, in line heights; others are outlines or artwork. */
+        val minGlyphHeightRatio: Float = 0.5f,
+        val maxGlyphHeightRatio: Float = 1.4f,
+        /** Largest vertical gap between a missed glyph and the block, in line heights. */
+        val maxGlyphGapRatio: Float = 0.6f,
         /** Width (px) of the ring around the text sampled for the cover color. */
         val colorSampleRing: Int = 3,
     )
@@ -104,7 +112,7 @@ class BlockSurfacePlanner(
     private fun boxSurface(block: TextBlock): BlockSurface {
         val original = block.box.expand(config.boxPadding, config.boxPadding).intersect(Box(0, 0, width, height))
         val color = dominantRingColor(original)
-        val box = growIntoBackground(block.box, color)
+        val box = growIntoBackground(absorbNearbyGlyphs(block, color), color, limitsFrom = block.box)
         val fill = box.expand(config.boxPadding, config.boxPadding).intersect(Box(0, 0, width, height))
         return BlockSurface(
             textArea = box,
@@ -116,12 +124,88 @@ class BlockSurfacePlanner(
     }
 
     /**
+     * Extends the block's box over letter-sized marks right above or below it, such as a short
+     * stylized line ("I'M") OCR did not recognize, so the original does not stay visible.
+     *
+     * Dark components are searched in a window around the block; anything touching the window's
+     * edge (balloon outlines, artwork) or taller than a text line is ignored.
+     */
+    private fun absorbNearbyGlyphs(block: TextBlock, background: Int): Box {
+        val box = block.box
+        val lineHeight = box.height / block.lines.size
+        if (lineHeight <= 0) return box
+        val window = box.expand(
+            (lineHeight * config.glyphSearchHorizontal).toInt(),
+            (lineHeight * config.glyphSearchVertical).toInt(),
+        ).intersect(Box(0, 0, width, height))
+        val windowWidth = window.width
+        val windowHeight = window.height
+        if (windowWidth <= 0 || windowHeight <= 0) return box
+
+        val visited = BooleanArray(windowWidth * windowHeight)
+        val queue = IntArray(windowWidth * windowHeight)
+        var result = box
+        for (start in visited.indices) {
+            if (visited[start] || isBackground(pixelInWindow(window, start), background)) continue
+
+            // 8-connected flood fill of one dark component.
+            var head = 0
+            var tail = 0
+            queue[tail++] = start
+            visited[start] = true
+            var minX = windowWidth
+            var minY = windowHeight
+            var maxX = -1
+            var maxY = -1
+            var touchesEdge = false
+            while (head < tail) {
+                val p = queue[head++]
+                val x = p % windowWidth
+                val y = p / windowWidth
+                minX = min(minX, x); maxX = max(maxX, x); minY = min(minY, y); maxY = max(maxY, y)
+                if (x == 0 || y == 0 || x == windowWidth - 1 || y == windowHeight - 1) touchesEdge = true
+                for (dy in -1..1) for (dx in -1..1) {
+                    val nx = x + dx
+                    val ny = y + dy
+                    if (nx !in 0 until windowWidth || ny !in 0 until windowHeight) continue
+                    val n = ny * windowWidth + nx
+                    if (!visited[n] && !isBackground(pixelInWindow(window, n), background)) {
+                        visited[n] = true
+                        queue[tail++] = n
+                    }
+                }
+            }
+
+            val component = Box(window.left + minX, window.top + minY, window.left + maxX + 1, window.top + maxY + 1)
+            if (!touchesEdge && isAdjacentGlyph(component, box, lineHeight)) result = result.union(component)
+        }
+        return result
+    }
+
+    /**
+     * A letter on the line right above or below [box]: about one line tall (thin pieces of a
+     * balloon outline are much flatter), close vertically and within the block's horizontal range.
+     */
+    private fun isAdjacentGlyph(component: Box, box: Box, lineHeight: Int): Boolean {
+        val tallEnough = component.height >= lineHeight * config.minGlyphHeightRatio
+        val notTooTall = component.height <= lineHeight * config.maxGlyphHeightRatio
+        val gap = component.verticalGap(box)
+        val close = gap <= lineHeight * config.maxGlyphGapRatio
+        val margin = (lineHeight * config.glyphSearchHorizontal).toInt()
+        val withinColumns = component.left >= box.left - margin && component.right <= box.right + margin
+        return tallEnough && notTooTall && close && withinColumns
+    }
+
+    private fun pixelInWindow(window: Box, index: Int): Int =
+        pixels[(window.top + index / window.width) * width + window.left + index % window.width]
+
+    /**
      * Grows [box] (up to the configured factors) one pixel column/row at a time, but only where the
      * new strip is background colored, so covers never spill over outlines or artwork.
      */
-    private fun growIntoBackground(box: Box, background: Int): Box {
-        val maxExtraX = ((box.width * (config.boxGrowthWidth - 1f)) / 2).toInt()
-        val maxExtraY = ((box.height * (config.boxGrowthHeight - 1f)) / 2).toInt()
+    private fun growIntoBackground(box: Box, background: Int, limitsFrom: Box = box): Box {
+        val maxExtraX = ((limitsFrom.width * (config.boxGrowthWidth - 1f)) / 2).toInt()
+        val maxExtraY = ((limitsFrom.height * (config.boxGrowthHeight - 1f)) / 2).toInt()
         val padding = config.boxPadding
         var left = box.left
         var right = box.right
