@@ -1,0 +1,16 @@
+ScanRead
+Copyright 2026 duka.tr
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+Third-party components:
+
+- Opus-MT translation models, (c) Language Technology Research Group, University of Helsinki,
+  licensed under CC BY 4.0. Tiedemann, J. & Thottingal, S. (2020). OPUS-MT - Building open
+  translation services for the World. EAMT 2020. Distributed separately as 4-bit quantized
+  release assets; not part of this source tree.
+- Comic Relief font, (c) The Comic Relief Project Authors, licensed under the SIL Open Font
+  License 1.1 (app/src/main/assets/licenses/ComicRelief-OFL.txt).
+- ONNX Runtime, (c) Microsoft Corporation, MIT License.
+- Google ML Kit, subject to the ML Kit Terms of Service.
+- AndroidX, Jetpack Compose, Kotlin and kotlinx.coroutines, Apache License 2.0.

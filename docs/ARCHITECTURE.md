@@ -69,8 +69,8 @@ An area only counts as a balloon when the text is near its center (≤ 22% offse
 Debug builds keep the 10 most recent captures (`capture_<stamp>.png`) and their analysis (`analysis_<stamp>.txt`: OCR lines, words, blocks, translations, timing) in the app's private storage:
 
 ```bash
-adb exec-out run-as com.scanread.debug ls files/debug
-adb exec-out run-as com.scanread.debug cat files/debug/<file> > <file>
+adb exec-out run-as tr.duka.scanread.debug ls files/debug
+adb exec-out run-as tr.duka.scanread.debug cat files/debug/<file> > <file>
 ```
 
 `DebugDumpReplayTest` replays every dump in a directory through the text pipeline on the JVM, which makes it quick to tune grouping rules against real screens:

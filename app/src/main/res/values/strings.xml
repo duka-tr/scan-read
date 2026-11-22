@@ -61,7 +61,7 @@
 
     <!-- Home -->
     <string name="home_status_stopped">Tap to start screen translation</string>
-    <string name="home_support">Support the developer</string>
+    <string name="home_support">Support the project</string>
     <string name="home_model_high_quality_ready">High-quality translation ready</string>
     <string name="home_model_basic_ready">Basic translation ready</string>
     <string name="home_model_needed">Language files needed. Tap to download.</string>
@@ -136,4 +136,8 @@
     <string name="license_mit" translatable="false">MIT License</string>
     <string name="license_ml_kit" translatable="false">ML Kit Terms of Service</string>
     <string name="license_apache_2" translatable="false">Apache License 2.0</string>
+    <string name="support_free_text">ScanRead is free, ad-free and open source. The best way to help is to star the project on GitHub, report problems and tell others about it.</string>
+    <string name="support_star_github">Star on GitHub</string>
+    <string name="support_visit_website">Visit duka.tr</string>
+    <string name="developer_website_url" translatable="false">https://duka.tr</string>
 </resources>

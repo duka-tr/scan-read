@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -6,12 +7,18 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
+// Release signing key, kept out of the repository (see README: keystore.properties).
+val keystoreProperties = Properties().apply {
+    val file = rootProject.file("keystore.properties")
+    if (file.exists()) file.inputStream().use(::load)
+}
+
 android {
-    namespace = "com.scanread"
+    namespace = "tr.duka.scanread"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.scanread"
+        applicationId = "tr.duka.scanread"
         minSdk = 26
         targetSdk = 35
         versionCode = 1
@@ -23,9 +30,20 @@ android {
             .getOrElse("https://github.com/DursunKm/scan-read/releases/download")
         buildConfigField("String", "MODEL_RELEASES_URL", "\"$modelReleasesUrl\"")
 
-        ndk {
-            // Phones (64/32-bit ARM) and x86_64 emulators; keeps native libraries out of other ABIs.
-            abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86_64")
+        // In-app tips through Google Play Billing. Off by default: selling through the store makes
+        // the developer a "trader" whose address is shown publicly. Enable with -Pscanread.tips=true.
+        val tipsEnabled = providers.gradleProperty("scanread.tips").getOrElse("false").toBoolean()
+        buildConfigField("boolean", "TIPS_ENABLED", tipsEnabled.toString())
+    }
+
+    signingConfigs {
+        if (keystoreProperties.isNotEmpty()) {
+            create("release") {
+                storeFile = file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+            }
         }
     }
 
@@ -35,12 +53,24 @@ android {
             versionNameSuffix = "-debug"
         }
         release {
+            signingConfig = signingConfigs.findByName("release")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
+        }
+    }
+
+    // One APK per CPU architecture for direct downloads (a phone needs only one set of native
+    // libraries). Google Play builds the same split from the app bundle automatically.
+    splits {
+        abi {
+            isEnable = true
+            reset()
+            include("arm64-v8a", "armeabi-v7a", "x86_64")
+            isUniversalApk = false
         }
     }
 

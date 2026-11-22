@@ -54,7 +54,7 @@
 
     <!-- Home -->
     <string name="home_status_stopped">Ekran çevirisini başlatmak için dokunun</string>
-    <string name="home_support">Geliştiriciyi destekle</string>
+    <string name="home_support">Projeyi destekle</string>
     <string name="home_model_high_quality_ready">Yüksek kaliteli çeviri hazır</string>
     <string name="home_model_basic_ready">Temel çeviri hazır</string>
     <string name="home_model_needed">Dil dosyaları gerekli. İndirmek için dokunun.</string>
@@ -113,4 +113,7 @@
     <string name="onboarding_next">İleri</string>
     <string name="onboarding_skip">Atla</string>
     <string name="onboarding_finish">Başla</string>
+    <string name="support_free_text">ScanRead ücretsiz, reklamsız ve açık kaynaklıdır. En iyi destek; projeye GitHub\'da yıldız vermek, sorunları bildirmek ve başkalarına önermektir.</string>
+    <string name="support_star_github">GitHub\'da yıldız ver</string>
+    <string name="support_visit_website">duka.tr\'yi ziyaret et</string>
 </resources>
