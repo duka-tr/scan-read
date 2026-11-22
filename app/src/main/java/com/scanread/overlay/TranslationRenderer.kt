@@ -47,8 +47,8 @@ class TranslationRenderer(
         }
     }
 
-    /** Comic-style lettering; narrow, so longer translations still fit balloons at a readable size. */
-    private val typeface: Typeface? = ResourcesCompat.getFont(context, R.font.patrick_hand)
+    /** Bold comic lettering close to the style comics are usually lettered in (Comic Relief, SIL OFL). */
+    private val typeface: Typeface? = ResourcesCompat.getFont(context, R.font.comic_relief)
 
     /**
      * Capital-letter height as a share of the text size for [typeface]. OCR line boxes hug the

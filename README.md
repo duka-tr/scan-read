@@ -125,7 +125,7 @@ To be decided.
 
 ### Third-party fonts
 
-- [Patrick Hand](https://fonts.google.com/specimen/Patrick+Hand) © Patrick Wagesreiter — [SIL Open Font License 1.1](app/src/main/assets/licenses/PatrickHand-OFL.txt). Used for rendered translations.
+- [Comic Relief](https://github.com/loudifier/Comic-Relief) (Bold) © The Comic Relief Project Authors — [SIL Open Font License 1.1](app/src/main/assets/licenses/ComicRelief-OFL.txt). Used for rendered translations.
 
 ### Third-party models
 

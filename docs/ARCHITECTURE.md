@@ -60,7 +60,7 @@ List<TextBlock> ──▶ BlockTranslator ──▶ CachingTranslationEngine ─
 
 `SoundEffectFilter` leaves drawn lettering untouched: outside balloons, text much taller than the page's typical line height, a single word the engine translates practically unchanged (a sound effect such as "BLAM"), or the "READ THIS WAY" reading-direction marker, is not covered. Rectangular covers also take in letter-sized marks on the line directly above or below a block, hiding short stylized lines OCR missed.
 
-`TranslationRenderer` draws all covers before any text, so neighbouring covers never hide a translation. Text uses the bundled Patrick Hand font (narrow comic lettering). `TextFitter` keeps words whole when possible; if the text does not fit at the minimum size, it breaks lines only at hyphenation points of the target language (Android's patterns), and as a last resort overflows slightly.
+`TranslationRenderer` draws all covers before any text, so neighbouring covers never hide a translation. Text uses the bundled Comic Relief Bold font, the open-licensed counterpart of the comic lettering style most translations use; sizes match the original capital height. `TextFitter` keeps words whole when possible; if the text does not fit at the minimum size, it breaks lines only at hyphenation points of the target language (Android's patterns), and as a last resort overflows slightly.
 
 An area only counts as a balloon when the text is near its center (≤ 22% offset) and at most 40% of it is enclosed dark content. Open balloons that leak into the panel background fail the centering test, which prevents repainting artwork. Text is dark on light covers and white on dark ones.
 
