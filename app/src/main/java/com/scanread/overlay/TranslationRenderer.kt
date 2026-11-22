@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.Typeface
 import androidx.core.content.res.ResourcesCompat
@@ -48,6 +49,18 @@ class TranslationRenderer(
 
     /** Comic-style lettering; narrow, so longer translations still fit balloons at a readable size. */
     private val typeface: Typeface? = ResourcesCompat.getFont(context, R.font.patrick_hand)
+
+    /**
+     * Capital-letter height as a share of the text size for [typeface]. OCR line boxes hug the
+     * capitals of comic lettering, so sizes are chosen to match capital heights, whatever the font.
+     */
+    private val capHeightRatio: Float = Paint().run {
+        typeface = this@TranslationRenderer.typeface
+        textSize = CAP_MEASURE_SIZE
+        val bounds = Rect()
+        getTextBounds(CAP_SAMPLE, 0, CAP_SAMPLE.length, bounds)
+        (bounds.height() / CAP_MEASURE_SIZE).takeIf { it > 0f } ?: DEFAULT_CAP_HEIGHT_RATIO
+    }
     private val cornerRadius = context.resources.getDimension(R.dimen.translation_corner_radius)
     private val minTextSize = context.resources.getDimension(R.dimen.translation_min_text_size)
     private val coverPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
@@ -66,7 +79,8 @@ class TranslationRenderer(
             minTextSize = minTextSize,
             locale = textLocale,
         )
-        val fitted = fitter.fit(item.text, area.width, area.height, item.originalLineHeight * ORIGINAL_SIZE_RATIO)
+        val maxTextSize = item.originalLineHeight * CAP_HEIGHT_TARGET / capHeightRatio
+        val fitted = fitter.fit(item.text, area.width, area.height, maxTextSize)
         val layout = fitted.layout
         // Centered on the area; an overflowing layout (wider or taller) extends evenly on both sides.
         val textLeft = area.left + (area.width - layout.width) / 2f
@@ -112,7 +126,11 @@ class TranslationRenderer(
     }
 
     private companion object {
-        const val ORIGINAL_SIZE_RATIO = 0.95f
+        /** Translated capitals are at most this share of the original line height. */
+        const val CAP_HEIGHT_TARGET = 0.85f
+        const val CAP_MEASURE_SIZE = 100f
+        const val CAP_SAMPLE = "H"
+        const val DEFAULT_CAP_HEIGHT_RATIO = 0.7f
         const val TEXT_COVER_MARGIN = 3f
     }
 }
