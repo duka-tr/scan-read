@@ -8,6 +8,7 @@ import com.scanread.text.model.TextLine
 class TextBlockBuilder(
     private val splitter: LineSplitter = LineSplitter(),
     private val grouper: TextBlockGrouper = TextBlockGrouper(),
+    private val columnSplitter: ColumnSplitter = ColumnSplitter(),
     private val minLetters: Int = DEFAULT_MIN_LETTERS,
 ) {
     /**
@@ -22,7 +23,9 @@ class TextBlockBuilder(
         val candidates = lines
             .flatMap { splitter.split(it, regions) }
             .filterNot { line -> ignoredAreas.any { it.contains(line.box.centerX, line.box.centerY) } }
-        return grouper.group(candidates, regions).mapNotNull(::toBlock)
+        return grouper.group(candidates, regions)
+            .flatMap(columnSplitter::split)
+            .mapNotNull(::toBlock)
     }
 
     private fun toBlock(lines: List<TextLine>): TextBlock? {
