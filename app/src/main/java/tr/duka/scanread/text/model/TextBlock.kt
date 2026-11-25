@@ -16,7 +16,8 @@ data class TextBlock(
 ) {
     /**
      * Distance between line starts (px), used to size the translation. Capped relative to the median
-     * line, so a logo or watermark that OCR merged into one line does not inflate the whole block.
+     * line, so a logo or watermark that OCR merged into one line does not inflate the whole block,
+     * and widely spaced lines do not make the translation larger than the original letters.
      */
     val linePitch: Float
         get() {
@@ -27,6 +28,6 @@ data class TextBlock(
         }
 
     private companion object {
-        const val MAX_PITCH_TO_LINE_RATIO = 1.6f
+        const val MAX_PITCH_TO_LINE_RATIO = 1.25f
     }
 }

@@ -52,6 +52,11 @@ class BlockSurfacePlanner(
         val maxGlyphGapRatio: Float = 0.6f,
         /** Width (px) of the ring around the text sampled for the cover color. */
         val colorSampleRing: Int = 3,
+        /**
+         * Letters fill a good part of their bounding box; thin slanted strokes such as the rays of a
+         * spiky balloon fill much less and are not letters.
+         */
+        val minGlyphInkDensity: Float = 0.2f,
     )
 
     fun plan(blocks: List<TextBlock>): List<BlockSurface> {
@@ -105,7 +110,7 @@ class BlockSurfacePlanner(
             fillBounds = bounds,
             fillMask = mask,
             fillColor = shape.color,
-            textColor = contrastingTextColor(shape.color),
+            textColor = textColorOf(block, shape.color),
         )
     }
 
@@ -119,7 +124,7 @@ class BlockSurfacePlanner(
             fillBounds = fill,
             fillMask = null,
             fillColor = color,
-            textColor = contrastingTextColor(color),
+            textColor = textColorOf(block, color),
         )
     }
 
@@ -177,7 +182,10 @@ class BlockSurfacePlanner(
             }
 
             val component = Box(window.left + minX, window.top + minY, window.left + maxX + 1, window.top + maxY + 1)
-            if (!touchesEdge && isAdjacentGlyph(component, box, lineHeight)) result = result.union(component)
+            val inkDensity = tail.toFloat() / (component.width * component.height)
+            if (!touchesEdge && inkDensity >= config.minGlyphInkDensity && isAdjacentGlyph(component, box, lineHeight)) {
+                result = result.union(component)
+            }
         }
         return result
     }
@@ -195,6 +203,46 @@ class BlockSurfacePlanner(
         val withinColumns = component.left >= box.left - margin && component.right <= box.right + margin
         return tallEnough && notTooTall && close && withinColumns
     }
+
+    /**
+     * The original lettering's color when it is clearly colored (red shouting, a blue caption),
+     * so the translation keeps its tone; otherwise black or white, whichever contrasts with [fill].
+     *
+     * Uses the pixels inside the text lines that differ most from [fill], which skips the blended
+     * pixels along letter edges.
+     */
+    private fun textColorOf(block: TextBlock, fill: Int): Int {
+        val fallback = contrastingTextColor(fill)
+        val ink = ArrayList<Int>()
+        for (line in block.lines) {
+            val box = line.box.intersect(Box(0, 0, width, height))
+            for (y in box.top until box.bottom) {
+                for (x in box.left until box.right) {
+                    val argb = pixels[y * width + x]
+                    if (colorDistance(argb, fill) > MIN_INK_DISTANCE) ink += argb
+                }
+            }
+        }
+        if (ink.size < MIN_INK_PIXELS) return fallback
+
+        val distances = ink.map { colorDistance(it, fill) }.sorted()
+        val cutoff = distances[(distances.size * FAR_INK_QUANTILE).toInt().coerceAtMost(distances.size - 1)]
+        val far = ink.filter { colorDistance(it, fill) >= cutoff }
+        fun medianChannel(shift: Int) = far.map { it shr shift and 0xFF }.sorted()[far.size / 2]
+        val red = medianChannel(16)
+        val green = medianChannel(8)
+        val blue = medianChannel(0)
+        val color = (0xFF shl 24) or (red shl 16) or (green shl 8) or blue
+
+        val saturation = maxOf(red, green, blue) - minOf(red, green, blue)
+        val contrast = abs(luminance(color) - luminance(fill))
+        return if (saturation >= MIN_TEXT_SATURATION && contrast >= MIN_TEXT_CONTRAST) color else fallback
+    }
+
+    private fun colorDistance(a: Int, b: Int): Int =
+        abs((a shr 16 and 0xFF) - (b shr 16 and 0xFF)) +
+            abs((a shr 8 and 0xFF) - (b shr 8 and 0xFF)) +
+            abs((a and 0xFF) - (b and 0xFF))
 
     private fun pixelInWindow(window: Box, index: Int): Int =
         pixels[(window.top + index / window.width) * width + window.left + index % window.width]
@@ -276,5 +324,14 @@ class BlockSurfacePlanner(
         private const val LINE_COVER_MARGIN = 2
         private const val QUANT = 16
         private const val BACKGROUND_TOLERANCE = 40
+
+        /** Summed channel difference from the fill above which a pixel counts as lettering. */
+        private const val MIN_INK_DISTANCE = 120
+        private const val MIN_INK_PIXELS = 40
+        /** Only the pixels farthest from the fill (top 30%) are averaged; edges are blended. */
+        private const val FAR_INK_QUANTILE = 0.7f
+        /** Gray, black and white lettering keeps the default colors; JPEG noise stays below this. */
+        private const val MIN_TEXT_SATURATION = 24
+        private const val MIN_TEXT_CONTRAST = 60
     }
 }

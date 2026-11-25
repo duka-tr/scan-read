@@ -98,6 +98,46 @@ class BlockSurfacePlannerTest {
         assertTrue("cover stays right of the border", surface.fillBounds.left >= 121)
     }
 
+    @Test
+    fun `colored lettering keeps its color`() {
+        val red = 0xFFE03222.toInt()
+        val pixels = image(background = BLACK).apply {
+            for (y in 152 until 163) for (x in 150 until 200) if (x % 6 < 3) this[y * width + x] = red
+        }
+        val textBlock = block(Box(150, 150, 200, 165))
+
+        val surface = planner(pixels).plan(listOf(textBlock)).single()
+
+        assertEquals(red, surface.textColor)
+    }
+
+    @Test
+    fun `gray lettering keeps the default contrasting color`() {
+        val pixels = image().apply {
+            for (y in 152 until 163) for (x in 150 until 200) if (x % 6 < 3) this[y * width + x] = 0xFF303030.toInt()
+        }
+        val textBlock = block(Box(150, 150, 200, 165))
+
+        val surface = planner(pixels).plan(listOf(textBlock)).single()
+
+        assertEquals(BlockSurfacePlanner.NEAR_BLACK, surface.textColor)
+    }
+
+    @Test
+    fun `thin slanted rays below a block are not taken for letters`() {
+        val pixels = image().apply {
+            // The recognized line.
+            for (y in 160 until 180) for (x in 130 until 210) this[y * width + x] = BLACK
+            // A balloon ray: a two pixel wide diagonal stroke, about one line tall, right below.
+            for (i in 0 until 20) for (t in 0 until 2) this[(186 + i) * width + 150 + i + t] = BLACK
+        }
+        val textBlock = block(Box(130, 160, 210, 180))
+
+        val surface = planner(pixels).plan(listOf(textBlock)).single()
+
+        assertTrue("cover stops above the ray", surface.fillBounds.bottom <= 186)
+    }
+
     private companion object {
         const val WHITE = 0xFFFFFFFF.toInt()
         const val BLACK = 0xFF000000.toInt()
