@@ -21,8 +21,8 @@ android {
         applicationId = "tr.duka.scanread"
         minSdk = 26
         targetSdk = 35
-        versionCode = 2
-        versionName = "0.1.1"
+        versionCode = 3
+        versionName = "0.1.2"
 
         // Where downloadable translation models are published (GitHub release assets). Forks and
         // local testing can override it: -Pscanread.modelReleasesUrl=http://localhost:8000
