@@ -98,6 +98,19 @@ class ColumnSplitterTest {
     }
 
     @Test
+    fun `keeps a balloon together when OCR reads each half of its lines separately`() {
+        // A wide gap after a full stop makes OCR return both halves of each row as separate lines.
+        val lines = listOf(
+            spaced(400, Triple("OK.", 560, 700)),
+            spaced(400, Triple("NOW,", 726, 880)),
+            spaced(455, Triple("LET'S", 560, 650)),
+            spaced(455, Triple("GO HOME.", 676, 880)),
+        )
+
+        assertEquals(1, splitter.split(lines).size)
+    }
+
+    @Test
     fun `separates overlapping balloons that OCR read across only once`() {
         // A narrow left balloon and a wider right one; only the first line reads across both, and
         // their horizontal extents overlap slightly.

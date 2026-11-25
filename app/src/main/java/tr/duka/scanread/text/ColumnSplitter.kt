@@ -1,5 +1,6 @@
 package tr.duka.scanread.text
 
+import tr.duka.scanread.text.model.Box
 import tr.duka.scanread.text.model.TextLine
 import tr.duka.scanread.text.model.TextWord
 import kotlin.math.max
@@ -13,9 +14,9 @@ import kotlin.math.min
  * (overlapping horizontally); each connected set of words is a candidate column. Text within one
  * balloon stays connected through the lines above and below even where a single gap is wide.
  *
- * Widely spaced lettering can leave words of one balloon unlinked. OCR then still reads them as
- * shared lines with ordinary word spacing, whereas lines of separate balloons are mostly read on
- * their own, so candidates that sit side by side on most of their lines are merged again.
+ * Widely spaced lettering can leave words of one balloon unlinked, yet they still sit beside each
+ * other at the same height with ordinary word spacing. Lines of separate balloons rarely do, so
+ * candidates that sit beside another one on most of their lines are merged again.
  */
 class ColumnSplitter(
     /** Largest gap between neighbouring words of one phrase, relative to the word height. */
@@ -74,16 +75,17 @@ class ColumnSplitter(
      * spacing: those are one widely spaced balloon, not two balloons OCR read across.
      */
     private fun mergeInterleaved(components: List<List<PlacedWord>>): List<List<PlacedWord>> {
-        val componentOf = HashMap<PlacedWord, Int>()
-        components.forEachIndexed { index, words -> words.forEach { componentOf[it] = index } }
-        val sharedLines = HashMap<Pair<Int, Int>, MutableSet<Int>>()
-        components.flatten().groupBy { it.line }.forEach { (line, lineWords) ->
-            lineWords.sortedBy { it.word.box.left }.zipWithNext { left, right ->
-                val a = componentOf.getValue(left)
-                val b = componentOf.getValue(right)
-                val height = max(left.word.box.height, right.word.box.height)
-                if (a != b && right.word.box.left - left.word.box.right <= height * maxPhraseGapRatio) {
-                    sharedLines.getOrPut(min(a, b) to max(a, b)) { mutableSetOf() } += line
+        // Lines of each candidate that sit beside a word of another candidate, per candidate pair.
+        val sideBySide = HashMap<Pair<Int, Int>, Pair<MutableSet<Int>, MutableSet<Int>>>()
+        for (a in components.indices) {
+            for (b in a + 1 until components.size) {
+                for (wordA in components[a]) {
+                    for (wordB in components[b]) {
+                        if (!besideEachOther(wordA.word.box, wordB.word.box)) continue
+                        val lines = sideBySide.getOrPut(a to b) { mutableSetOf<Int>() to mutableSetOf() }
+                        lines.first += wordA.line
+                        lines.second += wordB.line
+                    }
                 }
             }
         }
@@ -91,12 +93,20 @@ class ColumnSplitter(
         val parent = IntArray(components.size) { it }
         fun find(index: Int): Int = if (parent[index] == index) index else find(parent[index])
         val lineCounts = components.map { words -> words.map { it.line }.toSet().size }
-        sharedLines.forEach { (pair, lines) ->
-            if (lines.size * 2 > min(lineCounts[pair.first], lineCounts[pair.second])) {
-                parent[find(pair.first)] = find(pair.second)
-            }
+        sideBySide.forEach { (pair, lines) ->
+            val mostlyBeside = lines.first.size * 2 > lineCounts[pair.first] ||
+                lines.second.size * 2 > lineCounts[pair.second]
+            if (mostlyBeside) parent[find(pair.first)] = find(pair.second)
         }
         return components.indices.groupBy(::find).values.map { indices -> indices.flatMap(components::get) }
+    }
+
+    /** Words at the same height with no more than ordinary word spacing between them. */
+    private fun besideEachOther(a: Box, b: Box): Boolean {
+        val height = max(a.height, b.height)
+        val sameRow = -a.verticalGap(b) >= min(a.height, b.height) * MIN_ROW_OVERLAP_RATIO
+        val gap = max(a.left, b.left) - min(a.right, b.right)
+        return sameRow && gap <= height * maxPhraseGapRatio
     }
 
     private fun linked(a: PlacedWord, b: PlacedWord): Boolean {
@@ -120,4 +130,9 @@ class ColumnSplitter(
         box = words.map(TextWord::box).reduce { acc, box -> acc.union(box) },
         words = words,
     )
+
+    private companion object {
+        /** Words share a row when they overlap vertically by this share of the shorter one. */
+        const val MIN_ROW_OVERLAP_RATIO = 0.5f
+    }
 }
