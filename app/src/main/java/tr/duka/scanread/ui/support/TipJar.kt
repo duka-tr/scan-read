@@ -54,18 +54,28 @@ class TipJar(context: Context, private val scope: CoroutineScope) : PurchasesUpd
     private val client = BillingClient.newBuilder(context.applicationContext)
         .setListener(this)
         .enablePendingPurchases(PendingPurchasesParams.newBuilder().enableOneTimeProducts().build())
+        .enableAutoServiceReconnection()
         .build()
 
-    fun connect() {
+    /**
+     * Connects to Google Play, loads the tips (unless [loadTips] is false) and consumes purchases
+     * that are paid but not yet consumed; [onFinished] runs once that is done or has failed.
+     */
+    fun connect(loadTips: Boolean = true, onFinished: () -> Unit = {}) {
         client.startConnection(object : BillingClientStateListener {
             override fun onBillingSetupFinished(result: BillingResult) {
                 if (result.responseCode != BillingClient.BillingResponseCode.OK) {
                     _state.value = State.Unavailable
+                    onFinished()
                     return
                 }
                 scope.launch {
-                    loadTips()
-                    finishInterruptedPurchases()
+                    try {
+                        if (loadTips) loadTips()
+                        finishInterruptedPurchases()
+                    } finally {
+                        onFinished()
+                    }
                 }
             }
 

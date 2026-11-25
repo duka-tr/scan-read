@@ -1,5 +1,5 @@
 [versions]
-agp = "8.7.3"
+agp = "8.11.2"
 kotlin = "2.0.21"
 coreKtx = "1.15.0"
 lifecycle = "2.8.7"
@@ -11,7 +11,7 @@ mlkitTranslate = "17.0.3"
 onnxruntime = "1.32.0"
 navigationCompose = "2.8.5"
 datastore = "1.1.1"
-billing = "7.1.1"
+billing = "8.0.0"
 junit = "4.13.2"
 
 [libraries]

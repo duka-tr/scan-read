@@ -15,14 +15,14 @@ val keystoreProperties = Properties().apply {
 
 android {
     namespace = "tr.duka.scanread"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "tr.duka.scanread"
         minSdk = 26
-        targetSdk = 35
-        versionCode = 3
-        versionName = "0.1.2"
+        targetSdk = 36
+        versionCode = 4
+        versionName = "0.1.3"
 
         // Where downloadable translation models are published (GitHub release assets). Forks and
         // local testing can override it: -Pscanread.modelReleasesUrl=http://localhost:8000
@@ -74,10 +74,11 @@ android {
     }
 
     // One APK per CPU architecture for direct downloads (a phone needs only one set of native
-    // libraries). Google Play builds the same split from the app bundle automatically.
+    // libraries). Google Play builds the same split from the app bundle automatically, and the
+    // bundle task refuses to run while APK splits are enabled, so Play builds turn them off.
     splits {
         abi {
-            isEnable = true
+            isEnable = providers.gradleProperty("scanread.distribution").getOrElse("github") != "play"
             reset()
             include("arm64-v8a", "armeabi-v7a", "x86_64")
             isUniversalApk = false
