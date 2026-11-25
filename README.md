@@ -131,8 +131,9 @@ Translations of the app are welcome as pull requests.
 - [x] Balloon-aware grouping and in-place rendering
 - [x] High-quality offline translation (Opus-MT) with in-app model download
 - [x] Settings, language selection, first-run guide
-- [ ] Region selection (long-press the floating button)
+- [ ] Separate model repository with a signed catalog, so new language pairs arrive without an app update
 - [ ] More high-quality language pairs
+- [ ] Region selection (long-press the floating button)
 - [ ] Japanese, Korean and Chinese sources, including vertical text
 - [ ] Text-region detection model for complex layouts
 
