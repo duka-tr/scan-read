@@ -93,7 +93,7 @@ app/src/main/
 ├── java/tr/duka/scanread/
 │   ├── ScanReadApp.kt          Application entry point
 │   ├── capture/                Screen capture and screen-change detection
-│   ├── core/                   Shared infrastructure (settings, permissions, notifications)
+│   ├── core/                   Shared infrastructure (settings, permissions, notifications, app language)
 │   ├── image/                  Platform-independent image analysis (enclosed areas)
 │   ├── ocr/                    On-device text recognition engines
 │   ├── overlay/                Views drawn above other apps
@@ -102,7 +102,8 @@ app/src/main/
 │   ├── service/                Foreground service that drives a translation session
 │   ├── text/                   Platform-independent text layout and normalization logic
 │   ├── translate/              Translation engines (Opus-MT, ML Kit) and model management
-│   └── ui/                     Jetpack Compose screens and theme
+│   ├── ui/                     Jetpack Compose screens and theme
+│   └── update/                 New-version check against GitHub releases (GitHub builds only)
 └── res/
     ├── values/                 Default (English) strings, colors, dimensions
     └── values-tr/              Turkish translations
@@ -137,13 +138,29 @@ Translations of the app are welcome as pull requests.
 
 ## Privacy
 
-ScanRead processes screen contents only when you tap the floating button, entirely on your device. It does not collect, store, or transmit screen contents, personal data or analytics. The internet is used only to download language files and, in builds from GitHub, to check the release list for a newer version (at most daily; can be turned off). See the [privacy policy](https://duka.tr/scanread/privacy/).
+ScanRead processes screen contents only when you tap the floating button, entirely on your device. It does not collect, store, or transmit screen contents, personal data or analytics. The internet is used only to download language files and, in builds from GitHub, to check the release list for a newer version (at most daily; can be turned off). Google Play builds can offer optional tips; payment is handled entirely by Google Play, and tipping unlocks nothing. See the [privacy policy](https://duka.tr/scanread/privacy/).
 
 ## Support and contact
 
 - Report problems and ideas in [Issues](https://github.com/duka-tr/scan-read/issues).
 - Contact: [support@duka.tr](mailto:support@duka.tr)
 - Starring the repository helps others find the project.
+
+## Contributing
+
+Pull requests are welcome, including translations. Please read the duka.tr
+[contributing guidelines](https://github.com/duka-tr/.github/blob/main/CONTRIBUTING.md) first, and report security
+issues privately as described in the [security policy](https://github.com/duka-tr/.github/blob/main/SECURITY.md).
+
+Specific to this project:
+
+- Every user-facing text goes into `strings.xml` in English and Turkish; Lint fails the build on hard-coded text.
+- Screen content never leaves the device. No analytics, and no network calls beyond downloading language files and
+  the GitHub release check.
+- Changes to text grouping, normalization or rendering come with unit tests. Debug dumps make it quick to check them
+  against real screens (see [Debugging recognition](docs/ARCHITECTURE.md#debugging-recognition)).
+- Do not commit screenshots, captures or pages from comics; tests use neutral sample sentences.
+- Run `./gradlew testDebugUnitTest lint` before opening a pull request.
 
 ## License
 
