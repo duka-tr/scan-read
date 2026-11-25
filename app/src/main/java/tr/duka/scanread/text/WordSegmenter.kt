@@ -4,8 +4,9 @@ package tr.duka.scanread.text
  * Splits words that OCR glued together ("withyou" → "with you", "areal" → "a real") using a
  * dictionary of frequent words with log-probability scores.
  *
- * Also repairs a doubled letter in a long unknown word ("tresspassing" → "trespassing") when
- * dropping it gives a dictionary word, possibly with a common suffix.
+ * Also repairs a few common misreadings when the result is a dictionary word: a doubled letter in
+ * a long word ("tresspassing" → "trespassing"), an "l" read for an "I" ("rlght" → "right"), and
+ * a dropped final "g" written as an apostrophe ("throwin'" → "throwing").
  *
  * Only words missing from the dictionary are considered, and only splits into a few frequent
  * words are accepted, so names and rare words stay intact.
@@ -20,9 +21,10 @@ class WordSegmenter(
     private val partPenalty: Float = DEFAULT_PART_PENALTY,
 ) {
     /** Returns [text] with glued words separated and doubled letters repaired; everything else is unchanged. */
-    fun segment(text: String): String = WORD.replace(text) { match ->
+    fun segment(text: String): String = WORD.replace(restoreDroppedG(text)) { match ->
         val word = match.value
-        repairDoubledLetter(word.lowercase())?.let { return@replace withCaseOf(word, it) }
+        val repaired = repairDoubledLetter(word.lowercase()) ?: repairMisreadI(word.lowercase())
+        if (repaired != null) return@replace withCaseOf(word, repaired)
         val parts = split(word.lowercase()) ?: return@replace word
         parts.mapIndexed { index, part ->
             when {
@@ -70,6 +72,25 @@ class WordSegmenter(
         return null
     }
 
+    /** [word] with one "l" read as "i", if that makes it a frequent word; otherwise `null`. */
+    internal fun repairMisreadI(word: String): String? {
+        if (word.length < MIN_WORD_LENGTH || word in scores) return null
+        for (i in word.indices) {
+            if (word[i] != 'l') continue
+            val candidate = word.substring(0, i) + "i" + word.substring(i + 1)
+            if ((scores[candidate] ?: Float.NEGATIVE_INFINITY) >= minShortPartScore) return candidate
+        }
+        return null
+    }
+
+    /** "nothin'" → "nothing" when the full form is a known word. */
+    private fun restoreDroppedG(text: String): String = DROPPED_G.replace(text) { match ->
+        val stem = match.groupValues[1]
+        val full = stem.lowercase() + "g"
+        if ((scores[full] ?: Float.NEGATIVE_INFINITY) < minLongPartScore) return@replace match.value
+        stem + if (stem.last().isUpperCase()) "G" else "g"
+    }
+
     private fun isKnownForm(word: String): Boolean =
         (scores[word] ?: Float.NEGATIVE_INFINITY) >= minLongPartScore || knownStem(word)
 
@@ -107,6 +128,7 @@ class WordSegmenter(
         private val SUFFIXES = listOf("ing", "ed", "es", "s", "er", "ers", "ly")
 
         private val WORD = Regex("\\b[A-Za-z]+\\b")
+        private val DROPPED_G = Regex("\\b([A-Za-z]+[iI][nN])['’](?![A-Za-z])")
         private val SINGLE_LETTER_WORDS = setOf("a", "i")
 
         /** Two-letter parts must be real words; otherwise names split into syllables ("na mi"). */

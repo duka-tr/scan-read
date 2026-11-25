@@ -12,7 +12,8 @@ class WordSegmenterTest {
             "where" to -7.5f, "left" to -8.5f, "real" to -8f, "whole" to -9f, "world" to -7f,
             "na" to -10f, "mi" to -10.5f, "something" to -7.5f, "rare" to -14f, "word" to -8f,
             "sailor" to -12.2f, "chi" to -9f, "go" to -6f, "trespass" to -13f, "tress" to -12f,
-            "passing" to -9f, "anna" to -11f, "possible" to -8f,
+            "passing" to -9f, "anna" to -11f, "possible" to -8f, "right" to -7f, "here" to -6f,
+            "nothing" to -7.5f, "going" to -7f,
         ),
     )
 
@@ -20,6 +21,17 @@ class WordSegmenterTest {
     fun `repairs a doubled letter in a long unknown word`() {
         assertEquals("He was trespassing.", segmenter.segment("He was tresspassing."))
         assertEquals("POSSIBLE", segmenter.segment("POSSSIBLE"))
+    }
+
+    @Test
+    fun `repairs an l read for an I`() {
+        assertEquals("RIGHT HERE", segmenter.segment("RLGHT HERE"))
+    }
+
+    @Test
+    fun `restores a dropped g`() {
+        assertEquals("It means nothing, we are GOING", segmenter.segment("It means nothin', we are GOIN'"))
+        assertEquals("Rock 'n' roll", segmenter.segment("Rock 'n' roll"))
     }
 
     @Test
