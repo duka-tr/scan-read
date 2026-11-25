@@ -4,6 +4,9 @@ package tr.duka.scanread.text
  * Splits words that OCR glued together ("withyou" → "with you", "areal" → "a real") using a
  * dictionary of frequent words with log-probability scores.
  *
+ * Also repairs a doubled letter in a long unknown word ("tresspassing" → "trespassing") when
+ * dropping it gives a dictionary word, possibly with a common suffix.
+ *
  * Only words missing from the dictionary are considered, and only splits into a few frequent
  * words are accepted, so names and rare words stay intact.
  */
@@ -16,9 +19,10 @@ class WordSegmenter(
     private val maxParts: Int = DEFAULT_MAX_PARTS,
     private val partPenalty: Float = DEFAULT_PART_PENALTY,
 ) {
-    /** Returns [text] with glued words separated; everything else is unchanged. */
+    /** Returns [text] with glued words separated and doubled letters repaired; everything else is unchanged. */
     fun segment(text: String): String = WORD.replace(text) { match ->
         val word = match.value
+        repairDoubledLetter(word.lowercase())?.let { return@replace withCaseOf(word, it) }
         val parts = split(word.lowercase()) ?: return@replace word
         parts.mapIndexed { index, part ->
             when {
@@ -55,6 +59,33 @@ class WordSegmenter(
         return best[length]?.second?.takeIf { it.size > 1 }
     }
 
+    /** [word] without one of its doubled letters, if that makes it a known word; otherwise `null`. */
+    internal fun repairDoubledLetter(word: String): String? {
+        if (word.length < MIN_REPAIR_LENGTH || word in scores) return null
+        for (i in 1 until word.length) {
+            if (word[i] != word[i - 1]) continue
+            val candidate = word.removeRange(i, i + 1)
+            if (isKnownForm(candidate)) return candidate
+        }
+        return null
+    }
+
+    private fun isKnownForm(word: String): Boolean =
+        (scores[word] ?: Float.NEGATIVE_INFINITY) >= minLongPartScore || knownStem(word)
+
+    private fun knownStem(word: String): Boolean = SUFFIXES.any { suffix ->
+        if (!word.endsWith(suffix)) return@any false
+        val stem = word.dropLast(suffix.length)
+        stem.length >= MIN_STEM_LENGTH &&
+            (listOf(stem, stem + "e").any { (scores[it] ?: Float.NEGATIVE_INFINITY) >= MIN_STEM_SCORE })
+    }
+
+    private fun withCaseOf(original: String, word: String): String = when {
+        original.all { !it.isLowerCase() } -> word.uppercase()
+        original.first().isUpperCase() -> word.replaceFirstChar(Char::uppercaseChar)
+        else -> word
+    }
+
     private fun isAllowedPart(part: String): Boolean = when (part.length) {
         1 -> part in SINGLE_LETTER_WORDS
         2 -> part in TWO_LETTER_WORDS
@@ -69,6 +100,11 @@ class WordSegmenter(
         private const val DEFAULT_MAX_PARTS = 3
         private const val DEFAULT_PART_PENALTY = 2.5f
         private const val MIN_WORD_LENGTH = 3
+        /** Shorter words with a doubled letter are often names ("Anna", "Mattie"). */
+        private const val MIN_REPAIR_LENGTH = 7
+        private const val MIN_STEM_LENGTH = 4
+        private const val MIN_STEM_SCORE = -14f
+        private val SUFFIXES = listOf("ing", "ed", "es", "s", "er", "ers", "ly")
 
         private val WORD = Regex("\\b[A-Za-z]+\\b")
         private val SINGLE_LETTER_WORDS = setOf("a", "i")

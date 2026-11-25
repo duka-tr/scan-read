@@ -275,7 +275,7 @@ class ScreenTranslateService : LifecycleService() {
                     TranslationRenderer.Item(
                         text = block.displayText,
                         surface = analysis.surfaces[index],
-                        originalLineHeight = block.block.box.height.toFloat() / block.block.lines.size,
+                        originalLineHeight = block.block.linePitch,
                         textScale = settings.textScale,
                     )
                 },

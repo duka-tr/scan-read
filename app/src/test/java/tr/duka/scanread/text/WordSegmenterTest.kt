@@ -11,9 +11,21 @@ class WordSegmenterTest {
             "a" to -4f, "i" to -4.5f, "of" to -4f, "the" to -3.5f, "with" to -5f, "you" to -4.5f,
             "where" to -7.5f, "left" to -8.5f, "real" to -8f, "whole" to -9f, "world" to -7f,
             "na" to -10f, "mi" to -10.5f, "something" to -7.5f, "rare" to -14f, "word" to -8f,
-            "sailor" to -12.2f, "chi" to -9f, "go" to -6f,
+            "sailor" to -12.2f, "chi" to -9f, "go" to -6f, "trespass" to -13f, "tress" to -12f,
+            "passing" to -9f, "anna" to -11f, "possible" to -8f,
         ),
     )
+
+    @Test
+    fun `repairs a doubled letter in a long unknown word`() {
+        assertEquals("He was trespassing.", segmenter.segment("He was tresspassing."))
+        assertEquals("POSSIBLE", segmenter.segment("POSSSIBLE"))
+    }
+
+    @Test
+    fun `keeps short names with doubled letters`() {
+        assertEquals("Annna", segmenter.segment("Annna"))
+    }
 
     @Test
     fun `splits glued frequent words`() {

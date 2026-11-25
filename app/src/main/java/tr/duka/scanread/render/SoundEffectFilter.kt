@@ -42,7 +42,7 @@ class SoundEffectFilter(
         }
     }
 
-    private fun lineHeight(block: TextBlock): Float = block.box.height.toFloat() / block.lines.size
+    private fun lineHeight(block: TextBlock): Float = block.linePitch
 
     /** The "READ THIS WAY" arrow that publishers print on pages, often read with OCR noise. */
     private fun isReadingDirectionMarker(text: String): Boolean {
