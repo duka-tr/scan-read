@@ -6,6 +6,7 @@ import com.google.mlkit.nl.translate.TranslateLanguage
 import com.google.mlkit.nl.translate.TranslateRemoteModel
 import com.google.mlkit.nl.translate.Translation
 import com.google.mlkit.nl.translate.TranslatorOptions
+import tr.duka.scanread.core.locale.SystemLanguage
 import tr.duka.scanread.core.settings.AppSettings
 import tr.duka.scanread.core.tasks.await
 import tr.duka.scanread.translate.LanguagePair
@@ -16,8 +17,12 @@ import java.util.Locale
 /** All languages ML Kit can translate (ISO 639-1 codes). */
 val translatableLanguages: Set<String> get() = TranslateLanguage.getAllLanguages().toSet()
 
-/** The language pair to use for [settings]: the user's choice, or English into the device language. */
-fun resolveLanguagePair(settings: AppSettings, locale: Locale = Locale.getDefault()): LanguagePair =
+/**
+ * The language pair to use for [settings]: the user's choice, or English into the device language.
+ * The device language is the system one, not the app's own language setting: switching the app's
+ * screens to English must not change what screens are translated into.
+ */
+fun resolveLanguagePair(settings: AppSettings, locale: Locale = SystemLanguage.locale()): LanguagePair =
     LanguagePair.resolve(
         source = settings.sourceLanguage,
         target = settings.targetLanguage,

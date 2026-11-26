@@ -1,6 +1,7 @@
 package tr.duka.scanread
 
 import android.app.Application
+import tr.duka.scanread.core.locale.SystemLanguage
 import tr.duka.scanread.core.notification.NotificationChannels
 import tr.duka.scanread.core.settings.SettingsRepository
 import tr.duka.scanread.translate.opusmt.HighQualityModels
@@ -25,6 +26,7 @@ class ScanReadApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        SystemLanguage.init(this)
         // Re-registering on every start keeps channel names in sync with the current locale.
         NotificationChannels.registerAll(this)
     }

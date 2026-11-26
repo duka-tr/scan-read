@@ -153,8 +153,16 @@ class MainViewModel(
         }
     }
 
+    /**
+     * Finishes the first-run guide and stores the language pair it showed, so the pair the user saw
+     * and accepted stays the same even if the phone or app language changes later.
+     */
     fun completeOnboarding() {
-        viewModelScope.launch { settingsRepository.setOnboardingDone() }
+        val pair = _languagePair.value
+        viewModelScope.launch {
+            settingsRepository.setLanguages(pair.source, pair.target)
+            settingsRepository.setOnboardingDone()
+        }
     }
 
     fun downloadBasicModel() {
