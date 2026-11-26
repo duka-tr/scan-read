@@ -21,7 +21,7 @@ class WordSegmenter(
     private val partPenalty: Float = DEFAULT_PART_PENALTY,
 ) {
     /** Returns [text] with glued words separated and doubled letters repaired; everything else is unchanged. */
-    fun segment(text: String): String = WORD.replace(restoreDroppedG(text)) { match ->
+    fun segment(text: String): String = WORD.replace(restoreGluedExclamation(restoreDroppedG(text))) { match ->
         val word = match.value
         val repaired = repairDoubledLetter(word.lowercase()) ?: repairMisreadI(word.lowercase())
         if (repaired != null) return@replace withCaseOf(word, repaired)
@@ -83,6 +83,21 @@ class WordSegmenter(
         return null
     }
 
+    /**
+     * "COMINGI" → "COMING!": OCR often reads a final exclamation mark as an "I" or "l" glued to the
+     * last word. Only the last word is checked, and only when it is unknown but its stem is a
+     * frequent word, so names ending in "i" stay intact.
+     */
+    private fun restoreGluedExclamation(text: String): String {
+        val match = LAST_WORD.find(text) ?: return text
+        val word = match.groupValues[1]
+        if (word.lowercase() in scores) return text
+        val stem = word.dropLast(1)
+        if ((scores[stem.lowercase()] ?: Float.NEGATIVE_INFINITY) < minShortPartScore) return text
+        val after = match.groupValues[2]
+        return text.substring(0, match.range.first) + stem + if ('!' in after) after else "!$after"
+    }
+
     /** "nothin'" → "nothing" when the full form is a known word. */
     private fun restoreDroppedG(text: String): String = DROPPED_G.replace(text) { match ->
         val stem = match.groupValues[1]
@@ -128,6 +143,8 @@ class WordSegmenter(
         private val SUFFIXES = listOf("ing", "ed", "es", "s", "er", "ers", "ly")
 
         private val WORD = Regex("\\b[A-Za-z]+\\b")
+        /** The last word of a text when it ends in a letter OCR confuses with "!", and what follows it. */
+        private val LAST_WORD = Regex("\\b([A-Za-z]{3,}[iIl])([^A-Za-z]*)$")
         private val DROPPED_G = Regex("\\b([A-Za-z]+[iI][nN])['’](?![A-Za-z])")
         private val SINGLE_LETTER_WORDS = setOf("a", "i")
 

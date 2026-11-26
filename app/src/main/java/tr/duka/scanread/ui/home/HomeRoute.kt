@@ -12,6 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -66,14 +67,15 @@ fun HomeRoute(
         else -> ModelSummary.NEEDED
     }
 
+    val locale = LocalConfiguration.current.locales[0]
     HomeScreen(
         state = HomeUiState(
             isServiceRunning = isServiceRunning,
             overlayGranted = overlayGranted,
             languages = context.getString(
                 R.string.translation_languages,
-                LanguageNames.displayName(pair.source),
-                LanguageNames.displayName(pair.target),
+                LanguageNames.displayName(pair.source, locale),
+                LanguageNames.displayName(pair.target, locale),
             ),
             modelSummary = modelSummary,
             availableUpdate = (update as? UpdateState.Available)?.release,

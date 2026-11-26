@@ -15,6 +15,8 @@ object TextNormalizer {
     private const val SENTENCE_END = ".!?"
 
     private val WORD = Regex("\\b[A-Za-z]+\\b")
+    /** A space before closing punctuation ("COMING !"); a lone "." is kept apart from "...". */
+    private val SPACE_BEFORE_PUNCTUATION = Regex("\\s+([!?,;:]+|\\.(?!\\.))")
     /** Apostrophe-less contractions [repairContractions] understands, e.g. "youve". */
     val contractionKeys: Set<String> get() = CONTRACTIONS.keys
 
@@ -49,8 +51,14 @@ object TextNormalizer {
             }
             result.append(line)
         }
-        return result.toString().replace(WHITESPACE, " ").trim()
+        return attachPunctuation(result.toString().replace(WHITESPACE, " ").trim())
     }
+
+    /**
+     * Removes spaces OCR or a translation model put before closing punctuation ("COMING !" →
+     * "COMING!"). A detached "!" is easily read back as the letter I.
+     */
+    fun attachPunctuation(text: String): String = SPACE_BEFORE_PUNCTUATION.replace(text, "$1")
 
     /**
      * Restores apostrophes OCR commonly drops from English contractions ("Ive" → "I've",

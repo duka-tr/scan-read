@@ -8,7 +8,6 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import tr.duka.scanread.BuildConfig
 import tr.duka.scanread.ScanReadApp
-import tr.duka.scanread.core.locale.LanguageNames
 import tr.duka.scanread.core.settings.AppSettings
 import tr.duka.scanread.core.settings.SettingsRepository
 import tr.duka.scanread.translate.LanguagePair
@@ -25,8 +24,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import java.text.Collator
-import java.util.Locale
 
 /** State of the basic (ML Kit) language files for the selected pair. */
 enum class ModelState { CHECKING, MISSING, DOWNLOADING, READY, ERROR }
@@ -40,8 +37,6 @@ sealed interface UpdateState {
     data class Available(val release: AppRelease) : UpdateState
 }
 
-/** A selectable language with its name in the user's language. */
-data class LanguageOption(val code: String, val name: String)
 
 /**
  * Shared state of the app's screens: settings, the selected language pair and its models.
@@ -73,14 +68,11 @@ class MainViewModel(
 
     val highQualityModel: StateFlow<HighQualityModels.State> = highQualityModels.state
 
-    /** Alphabetical order of the user's language (e.g. Turkish "Ç" right after "C"). */
-    private val nameOrder = compareBy<LanguageOption, String>(Collator.getInstance(Locale.getDefault())) { it.name }
+    /** Codes of the languages that can be read; the screen names and sorts them in its own language. */
+    val sourceLanguages: List<String> = LanguagePair.SOURCE_LANGUAGES.filter { it in translatableLanguages }
 
-    val sourceLanguages: List<LanguageOption> =
-        LanguagePair.SOURCE_LANGUAGES.filter { it in translatableLanguages }.map(::option).sortedWith(nameOrder)
-
-    val targetLanguages: List<LanguageOption> =
-        translatableLanguages.map(::option).sortedWith(nameOrder)
+    /** Codes of the languages that can be translated into. */
+    val targetLanguages: List<String> = translatableLanguages.toList()
 
     init {
         viewModelScope.launch {
@@ -193,8 +185,6 @@ class MainViewModel(
     fun downloadHighQualityModel() = highQualityModels.download()
 
     fun deleteHighQualityModel() = highQualityModels.delete()
-
-    private fun option(code: String) = LanguageOption(code, LanguageNames.displayName(code))
 
     private suspend fun runModelOperation(failureState: ModelState, operation: suspend () -> ModelState): ModelState =
         try {

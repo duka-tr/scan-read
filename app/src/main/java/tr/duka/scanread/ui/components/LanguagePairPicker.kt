@@ -16,35 +16,52 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import tr.duka.scanread.R
+import tr.duka.scanread.core.locale.LanguageNames
 import tr.duka.scanread.translate.LanguagePair
-import tr.duka.scanread.ui.LanguageOption
+import java.text.Collator
+import java.util.Locale
 
-/** Source and target language selection. */
+/** A selectable language with its name in the screen's language. */
+private data class LanguageOption(val code: String, val name: String)
+
+/**
+ * Source and target language selection. Names are shown and sorted in the screen's language, which
+ * follows the app language setting (e.g. Turkish "Ç" right after "C").
+ */
 @Composable
 fun LanguagePairPicker(
     pair: LanguagePair,
-    sources: List<LanguageOption>,
-    targets: List<LanguageOption>,
+    sources: List<String>,
+    targets: List<String>,
     onChange: (source: String, target: String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val locale = LocalConfiguration.current.locales[0]
+    val sourceOptions = remember(sources, locale) { optionsOf(sources, locale) }
+    val targetOptions = remember(targets, locale) { optionsOf(targets, locale) }
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
         LanguageDropdown(
             label = stringResource(R.string.languages_source),
-            options = sources,
+            options = sourceOptions,
             selected = pair.source,
             onSelect = { onChange(it, pair.target) },
         )
         LanguageDropdown(
             label = stringResource(R.string.languages_target),
-            options = targets.filter { it.code != pair.source },
+            options = targetOptions.filter { it.code != pair.source },
             selected = pair.target,
             onSelect = { onChange(pair.source, it) },
         )
     }
+}
+
+private fun optionsOf(codes: List<String>, locale: Locale): List<LanguageOption> {
+    val collator = Collator.getInstance(locale)
+    return codes.map { LanguageOption(it, LanguageNames.displayName(it, locale)) }.sortedWith(compareBy(collator) { it.name })
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

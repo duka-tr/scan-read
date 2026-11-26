@@ -1,6 +1,7 @@
 package tr.duka.scanread.pipeline
 
 import tr.duka.scanread.text.SentenceSplitter
+import tr.duka.scanread.text.TextNormalizer
 import tr.duka.scanread.text.model.TextBlock
 import tr.duka.scanread.translate.TranslationEngine
 import kotlinx.coroutines.Dispatchers
@@ -52,6 +53,6 @@ class BlockTranslator(
     private fun cleanUp(source: String, translation: String): String {
         var result = translation.trim()
         if (!source.trimStart().startsWith("-")) result = result.trimStart('-', '–', '—', ' ')
-        return result
+        return TextNormalizer.attachPunctuation(result)
     }
 }

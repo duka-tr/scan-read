@@ -27,6 +27,13 @@ class TextNormalizerTest {
     }
 
     @Test
+    fun `punctuation is attached to the word before it`() {
+        assertEquals("HELP IS COMING!", TextNormalizer.joinLines(listOf("HELP IS", "COMING !")))
+        assertEquals("Really?! Yes, now.", TextNormalizer.attachPunctuation("Really ?! Yes , now ."))
+        assertEquals("WAIT ...FOR ME", TextNormalizer.attachPunctuation("WAIT ...FOR ME"))
+    }
+
+    @Test
     fun `joinLines ignores blank lines`() {
         assertEquals("A B", TextNormalizer.joinLines(listOf("A", "  ", "B")))
     }

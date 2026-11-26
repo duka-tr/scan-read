@@ -13,7 +13,7 @@ class WordSegmenterTest {
             "na" to -10f, "mi" to -10.5f, "something" to -7.5f, "rare" to -14f, "word" to -8f,
             "sailor" to -12.2f, "chi" to -9f, "go" to -6f, "trespass" to -13f, "tress" to -12f,
             "passing" to -9f, "anna" to -11f, "possible" to -8f, "right" to -7f, "here" to -6f,
-            "nothing" to -7.5f, "going" to -7f,
+            "nothing" to -7.5f, "going" to -7f, "coming" to -7.5f, "taxi" to -10f,
         ),
     )
 
@@ -26,6 +26,19 @@ class WordSegmenterTest {
     @Test
     fun `repairs an l read for an I`() {
         assertEquals("RIGHT HERE", segmenter.segment("RLGHT HERE"))
+    }
+
+    @Test
+    fun `restores an exclamation mark read as a letter glued to the last word`() {
+        assertEquals("Help is coming!", segmenter.segment("Help is comingi"))
+        assertEquals("HELP IS COMING!!", segmenter.segment("HELP IS COMINGI!!"))
+        assertEquals("Help is coming!", segmenter.segment("Help is comingl"))
+    }
+
+    @Test
+    fun `keeps last words that only end in i`() {
+        assertEquals("Call a taxi", segmenter.segment("Call a taxi"))
+        assertEquals("Hello Naomi", segmenter.segment("Hello Naomi"))
     }
 
     @Test
