@@ -44,3 +44,7 @@ tokenizer_samples.tsv
 
 # Screenshots dropped into the project root (may show private settings)
 /*.png
+
+# Release outputs kept next to the project (APKs, app bundles, release notes)
+/scanread-builds/
+*.aab
